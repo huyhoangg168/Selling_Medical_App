@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/line_background"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="5dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_label_code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mã đơn hàng :"
+
+            android:textSize="16sp"
+            />
+
+        <TextView
+            android:id="@+id/tv_Code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HAPPY0604"
+            android:layout_marginStart="10dp"
+            android:textStyle="bold"
+            android:textColor="@color/header_color"
+            android:textSize="16dp"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginBottom="5dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thời gian giao dịch:"
+            android:textSize="16sp"
+            />
+
+        <TextView
+            android:id="@+id/tv_Time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="9:15  06/04/2024"
+            android:textSize="16dp"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginBottom="20dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Tích điểm mua hàng:"
+            android:textSize="16sp"
+            android:visibility="gone"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="+210"
+            android:textStyle="bold"
+            android:textColor="@color/coin_color"
+            android:textSize="18dp"
+            android:visibility="gone"
+            />
+        <TextView
+            android:id="@+id/tv_label_point"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Điểm sử dụng:"
+            android:textSize="16sp"
+            />
+
+        <TextView
+            android:id="@+id/tv_Point"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="0dp"
+            android:text="-1.800"
+            android:textColor="@color/minus_color"
+            android:textSize="16dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

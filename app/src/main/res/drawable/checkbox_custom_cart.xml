@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Trạng thái mặc định -->
+    <item android:drawable="@drawable/ic_uncheckbox" android:state_checked="false"/>
+
+    <!-- Trạng thái đã được tích -->
+    <item android:drawable="@drawable/icon_state_checked" android:state_checked="true"/>
+
+    <!-- Trạng thái ban đầu (chưa được tích) -->
+    <item android:drawable="@drawable/ic_uncheckbox"/>
+
+</selector>

@@ -1,0 +1,4 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#FF0000" /> <!-- Thay thế mã màu này với màu nền mong muốn -->
+    <corners android:radius="300dp" /> <!-- Đặt bán kính hình tròn, giá trị này có thể thay đổi -->
+</shape>

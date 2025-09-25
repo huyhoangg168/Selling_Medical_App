@@ -1,0 +1,35 @@
+<resources>
+    <string name="web_client_id">929394835463-1dqh7n748mbfk7dbrrbms1b344r079av.apps.googleusercontent.com</string>
+    <string name="channel_name">Notification_Channel</string>
+    <string name="channel_description">This channel use for notification in app</string>
+    <string name="app_name">Medimate</string>
+    <string name="txtTrangChu">Trang chủ</string>
+    <string name="txtDanhMuc">Danh mục</string>
+    <string name="txtDonHang">Đơn Hàng</string>
+    <string name="txtCaNhan">Cá Nhân</string>
+    <string name="txtTimKiem">Bạn đang tìm kiếm gì?</string>
+    <string name="txtTimMedimate">Tìm kiếm trên Medimate</string>
+    <string name="txtDuocPham">Dược phẩm</string>
+    <string name="txtCSSK">Chăm sóc sức khỏe</string>
+    <string name="txtCSCN">Chăm sóc cá nhân</string>
+    <string name="txtCSSD">Chăm sóc sắc đẹp</string>
+    <string name="txtSPTL">Sản phẩm tiện lợi</string>
+    <string name="txtDanhMucSP">Danh mục sản phẩm</string>
+    <string name="txtTPCN">Thực phẩm chức năng</string>
+    <string name="txtMeVaBe">Mẹ và bé</string>
+    <string name="txtDangKy">Tôi đã đọc và đồng ý điều khoản sử dụng <u>thỏa thuận người dùng MediMate, chính sách bảo mật</u></string>
+    <string name="txtThietBiYTe">Thiết bị y tế</string>
+    <string name="txtHHNN">Hoạt huyết Nhất Nhất (3 vỉ x 10 viên/hộp)</string>
+    <string name="priceHHNN">115.000 đ/hộp</string>
+    <string name="txtPoint">chi tiêu thêm <b>2.160 </b>điểm để thăng hạng</string>
+    <string name="txtNhanHang">Nhãn hàng Pharmacity</string>
+    <string name="txtYeuCauDN">Hãy đăng nhập để được hưởng các đặc quyền riêng cho thành viên</string>
+    <string name="txtDKNgay"><u>Đăng ký ngay</u></string>
+    <string name="txtDNNgay"><u>Đăng nhập ngay</u></string>
+    <string name="txtAccumulateEmpty">Cùng mua sắm tại Medimate để tích điểm và đổi nhiều coupon ưu đãi nhé!</string>
+    <string name="txtCouponName">“HAPPY0405” giành tặng ngay cho bạn! Giảm 20% với đơn hàng từ 800K</string>
+    <string name="txtNameNotificationItem"><b>Mã hết hạn</b> vào <b>ngày 04-04-2024</b>!Áp dụng ngay để không bỏ lỡ!~</string>
+    <string name="txtPhiVanChuyen">Giá đã bao gồm thuế.Phí vận chuyển và các chi phí khác (nếu có)sẽ được thể hiện khi đặt hàng.</string>
+    <string name="msg_token_fmt" />
+
+</resources>

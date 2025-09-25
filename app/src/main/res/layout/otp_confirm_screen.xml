@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/header_color"
+        android:elevation="4dp"
+        android:orientation="horizontal"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        tools:ignore="MissingConstraints">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/ivArrowLeftCart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_arrow_left" />
+
+        </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/body"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="80dp"
+        android:background="@color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="36dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Space
+                    android:layout_width="26dp"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Nhập mã xác thực"
+                    android:textSize="26dp"
+                    android:textStyle="bold" />
+
+                <Space
+                    android:layout_width="26dp"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="16dp">
+
+                <Space
+                    android:layout_width="26dp"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Mã xác thực (OTP) đã được gửi qua số điện thoại"
+                    android:textSize="16sp" />
+
+                <Space
+                    android:layout_width="6dp"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="16dp">
+
+                <Space
+                    android:layout_width="26dp"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:id="@+id/tvOtpPhone"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="0386xxx"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <Space
+                    android:layout_width="6dp"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+<!--            otp code is correct -->
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:visibility="visible"
+                android:columnCount="6"
+                android:rowCount="1">
+
+                <EditText
+                    android:id="@+id/edtConfimNumber1"
+                    android:layout_width="50dp"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginRight="10dp"
+                    android:imeOptions="actionNext"
+                    android:inputType="number"
+                    android:digits="0123456789"
+                    android:maxLength="1"
+                    android:textCursorDrawable="@drawable/text_cursor_otp_background"
+                    android:textAlignment="center"
+                    android:textSize="30sp"
+                    android:textColor="@color/black"
+                    android:background="@drawable/otp_default_backround"/>
+                <EditText
+                    android:id="@+id/edtConfimNumber2"
+                    android:layout_width="50dp"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginRight="10dp"
+                    android:imeOptions="actionNext"
+                    android:inputType="number"
+                    android:digits="0123456789"
+                    android:textCursorDrawable="@drawable/text_cursor_otp_background"
+                    android:maxLength="1"
+                    android:textAlignment="center"
+                    android:textSize="30sp"
+                    android:textColor="@color/black"
+                    android:background="@drawable/otp_default_backround"/>
+                <EditText
+                    android:id="@+id/edtConfimNumber3"
+                    android:layout_width="50dp"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginRight="10dp"
+                    android:imeOptions="actionNext"
+                    android:inputType="number"
+                    android:digits="0123456789"
+                    android:textCursorDrawable="@drawable/text_cursor_otp_background"
+                    android:maxLength="1"
+                    android:textAlignment="center"
+                    android:textSize="30sp"
+                    android:textColor="@color/black"
+                    android:background="@drawable/otp_default_backround"/>
+                <EditText
+                    android:id="@+id/edtConfimNumber4"
+                    android:layout_width="50dp"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginRight="10dp"
+                    android:imeOptions="actionNext"
+                    android:inputType="number"
+                    android:digits="0123456789"
+                    android:textCursorDrawable="@drawable/text_cursor_otp_background"
+                    android:maxLength="1"
+                    android:textAlignment="center"
+                    android:textSize="30sp"
+                    android:textColor="@color/black"
+                    android:background="@drawable/otp_default_backround"/>
+                <EditText
+                    android:id="@+id/edtConfimNumber5"
+                    android:layout_width="50dp"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginRight="10dp"
+                    android:imeOptions="actionNext"
+                    android:inputType="number"
+                    android:digits="0123456789"
+                    android:textCursorDrawable="@drawable/text_cursor_otp_background"
+                    android:maxLength="1"
+                    android:textAlignment="center"
+                    android:textSize="30sp"
+                    android:textColor="@color/black"
+                    android:background="@drawable/otp_default_backround"/>
+
+                <EditText
+                    android:id="@+id/edtConfimNumber6"
+                    android:layout_width="50dp"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginRight="10dp"
+                    android:imeOptions="actionNext"
+                    android:inputType="number"
+                    android:digits="0123456789"
+                    android:textCursorDrawable="@drawable/text_cursor_otp_background"
+                    android:maxLength="1"
+                    android:textAlignment="center"
+                    android:textSize="30sp"
+                    android:textColor="@color/black"
+                    android:background="@drawable/otp_default_backround"/>
+
+
+            </GridLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="16dp">
+
+                <Space
+                    android:layout_width="26dp"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="Mã xác thực sẽ hết hiệu lực sau:"
+                    android:textSize="16sp" />
+                <TextView
+                    android:id="@+id/tvCountDown"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="01:56"
+                    android:layout_marginRight="15dp"
+                    android:gravity="end"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="@color/header_color"
+                    />
+
+                <Space
+                    android:layout_width="6dp"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                android:paddingTop="8dp">
+
+                <Space
+                    android:layout_width="26dp"
+                    android:layout_height="wrap_content" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="Mã xác thực bạn nhập chưa đúng!Vui lòng kiểm tra lại!"
+                    android:textSize="16sp"
+                    android:textColor="@color/minus_color"
+                    />
+                <Space
+                    android:layout_width="128dp"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
