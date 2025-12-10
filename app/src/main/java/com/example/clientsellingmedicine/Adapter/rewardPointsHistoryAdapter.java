@@ -7,8 +7,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
-import com.example.clientsellingmedicine.activity.AccumulateFragment;
-import com.example.clientsellingmedicine.activity.RedeemFragment;
+import com.example.clientsellingmedicine.activity.coupon.AccumulateFragment;
+import com.example.clientsellingmedicine.activity.coupon.RedeemFragment;
 
 public class rewardPointsHistoryAdapter extends FragmentStatePagerAdapter {
 

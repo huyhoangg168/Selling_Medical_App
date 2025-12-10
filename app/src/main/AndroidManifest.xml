@@ -20,9 +20,9 @@
         android:usesCleartextTraffic="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/logo_medimate"
-        android:label="@string/app_name"
-        android:roundIcon="@drawable/logo_medimate"
+        android:icon="@drawable/logo_medical_app"
+        android:label="Medicare"
+        android:roundIcon="@drawable/logo_medical_app"
         android:supportsRtl="true"
         android:theme="@style/Theme.ClientSellingMedicine"
         android:testOnly="false"
@@ -37,78 +37,95 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.RegisterActivity"
+            android:name=".activity.authAndAccount.RegisterActivity"
             android:exported="false">
         </activity>
 
         <activity
-            android:name=".activity.OtpConfirmActivity"
+            android:name=".activity.authAndAccount.OtpConfirmActivity"
             android:exported="false">
         </activity>
 
         <activity
-            android:name=".activity.CartActivity"
+            android:name=".activity.productAndPayment.CartActivity"
             android:exported="false">
 
         </activity>
         <activity
-            android:name=".activity.DetailProductActivity"
+            android:name=".activity.productAndPayment.DetailProductActivity"
             android:exported="false">
 
         </activity>
         <activity
-            android:name=".activity.DetailNotificationActivity"
+            android:name=".activity.notificationAndNews.DetailNotificationActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.LoginActivity"
+            android:name=".activity.authAndAccount.LoginActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.NotificationActivity"
+            android:name=".activity.notificationAndNews.NotificationActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.RegisteredAddressActivity"
+            android:name=".activity.adress.RegisteredAddressActivity"
             android:launchMode="singleTop"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.AddAddressActivity"
+            android:name=".activity.adress.AddAddressActivity"
             android:windowSoftInputMode="adjustPan|adjustResize"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.HealthyNewsDetailActivity"
+            android:name=".activity.notificationAndNews.HealthyNewsDetailActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.PaymentActivity"
+            android:name=".activity.productAndPayment.PaymentActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.OrderDetailActivity"
+            android:name=".activity.order.OrderDetailActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.RewardPointsHistoryActvity"
+            android:name=".activity.coupon.RewardPointsHistoryActvity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.ProductActivity"
+            android:name=".activity.productAndPayment.ProductActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.IndividualActivity"
+            android:name=".activity.authAndAccount.IndividualActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.EditProfileActivity"
+            android:name=".activity.authAndAccount.AdminProductActivity"
             android:exported="false">
         </activity>
         <activity
-            android:name=".activity.MomoPaymentResultActivity"
-            android:exported="true">
+            android:name=".activity.productAndPayment.AddProductActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".activity.order.AdminApproveOrderActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".activity.order.AdminDashboardActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".activity.authAndAccount.EditProfileActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".activity.productAndPayment.MomoPaymentResultActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

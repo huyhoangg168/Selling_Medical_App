@@ -27,4 +27,15 @@ public class OrderDTO implements Serializable {
     private Integer status;
     private String userAddress;
     private RedeemedCouponDTO redeemed_coupons;
+
+    private String productSummary;
+
+    public String getProductSummary() {
+        return productSummary;
+    }
+
+    public void setProductSummary(String productSummary) {
+        this.productSummary = productSummary;
+    }
+
 }

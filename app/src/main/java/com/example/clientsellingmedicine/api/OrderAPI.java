@@ -1,5 +1,7 @@
 package com.example.clientsellingmedicine.api;
 
+import com.example.clientsellingmedicine.DTO.AdminOrderStatistics;
+import com.example.clientsellingmedicine.DTO.AdminStatisticsResponse;
 import com.example.clientsellingmedicine.DTO.MomoResponse;
 import com.example.clientsellingmedicine.DTO.OrderDTO;
 import com.example.clientsellingmedicine.DTO.OrderDetailDTO;
@@ -9,6 +11,7 @@ import com.example.clientsellingmedicine.models.MoMoOrderInfo;
 import com.example.clientsellingmedicine.models.Order;
 
 import java.util.List;
+import java.util.Map;
 
 
 import okhttp3.ResponseBody;
@@ -16,7 +19,9 @@ import retrofit2.Call;
 
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -51,6 +56,22 @@ public interface OrderAPI {
 
     @POST("/api/order/cod")
     Call<Order> newOrderWithCOD(@Body OrderWithDetails order);
+
+    //Thêm MỚI cho admin:
+    // 1. Lấy danh sách đơn cho admin (gợi ý: chỉ trả về pending ở BE)
+    @GET("/api/order/admin")
+    Call<List<OrderDTO>> getAdminOrders();
+
+    // 2. Cập nhật trạng thái đơn (0 = từ chối, 1 = thành công, 2 = chờ duyệt)
+    @PATCH("/api/order/{code}/status")
+    Call<ResponseBody> updateOrderStatus(
+            @Path("code") String code,
+            @Body Map<String, Integer> body
+    );
+
+    // 3. Thống kê cho admin (tổng đơn, doanh thu, thành công/thất bại/đang chờ)
+    @GET("/api/order/admin/statistics")
+    Call<AdminStatisticsResponse> getAdminStatistics();
 
 
 }

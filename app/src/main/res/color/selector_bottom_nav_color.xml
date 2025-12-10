@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true" android:color="#1E6CFF" />  <!-- xanh active -->
+    <item android:color="#9BA4B5" />                               <!-- xám inactive -->
+</selector>

@@ -1,37 +1,33 @@
 package com.example.clientsellingmedicine.activity;
 
-import static android.content.ContentValues.TAG;
-
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import android.Manifest;
 
+import com.example.clientsellingmedicine.DTO.UserDTO;
 import com.example.clientsellingmedicine.R;
 import com.example.clientsellingmedicine.DTO.Token;
+import com.example.clientsellingmedicine.activity.authAndAccount.AdminProductActivity;
+import com.example.clientsellingmedicine.activity.authAndAccount.ProfileFragment;
+import com.example.clientsellingmedicine.activity.authAndAccount.UnLoginProfileFragment;
+import com.example.clientsellingmedicine.activity.coupon.ExchangeFragment;
+import com.example.clientsellingmedicine.activity.order.OrderFragment;
 import com.example.clientsellingmedicine.utils.Constants;
 import com.example.clientsellingmedicine.utils.SharedPref;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MainActivity extends AppCompatActivity
         implements BottomNavigationView
@@ -49,6 +45,20 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+
+        // *** MỚI: nếu là admin thì đá sang dashboard luôn ***
+        Token token = SharedPref.loadToken(mContext, Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN);
+        if (token != null) {
+            // đã đăng nhập rồi
+            UserDTO user = SharedPref.loadUser(mContext, Constants.USER_PREFS_NAME, Constants.KEY_USER);
+            if (user != null && "admin".equalsIgnoreCase(user.getRole())) {
+                // Admin thì không vào MainActivity, chuyển luôn sang AdminProductActivity
+                startActivity(new Intent(MainActivity.this, AdminProductActivity.class));
+                finish();
+                return; // nhớ return để không chạy tiếp code dưới
+            }
+        }
+
         setContentView(R.layout.fragment);
 
         bottomNavigationView

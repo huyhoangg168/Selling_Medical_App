@@ -59,6 +59,13 @@ import com.example.clientsellingmedicine.Adapter.feedAdapter;
 import com.example.clientsellingmedicine.DTO.Notification;
 import com.example.clientsellingmedicine.DTO.Token;
 import com.example.clientsellingmedicine.R;
+import com.example.clientsellingmedicine.activity.authAndAccount.LoginActivity;
+import com.example.clientsellingmedicine.activity.notificationAndNews.HealthyNewsDetailActivity;
+import com.example.clientsellingmedicine.activity.notificationAndNews.NotificationActivity;
+import com.example.clientsellingmedicine.activity.productAndPayment.CartActivity;
+import com.example.clientsellingmedicine.activity.productAndPayment.DetailProductActivity;
+import com.example.clientsellingmedicine.activity.productAndPayment.PaymentActivity;
+import com.example.clientsellingmedicine.activity.productAndPayment.ProductActivity;
 import com.example.clientsellingmedicine.interfaces.IOnButtonAddToCartClickListener;
 import com.example.clientsellingmedicine.interfaces.IOnFeedItemClickListener;
 import com.example.clientsellingmedicine.interfaces.IOnProductItemClickListener;
@@ -273,6 +280,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
         saveFirebaseDeviceToken();
     }
 
+    //Hàm lấy dữ liệu danh mục bán chạy
     private void getTopProductsSelling(){
         ProductAPI productAPI = ServiceBuilder.buildService(ProductAPI.class);
         Call<List<Product>> request = productAPI.getBestSellerProducts();
@@ -302,7 +310,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
         });
     }
 
-
+    //Hàm lấy danh mục sản phẩm mới
     private void getTopNewProducts(){
         ProductAPI productAPI = ServiceBuilder.buildService(ProductAPI.class);
         Call<List<Product>> request = productAPI.getNewProducts();
@@ -332,6 +340,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
         });
     }
 
+    //Hàm lấy danh mục ưu đãi giảm giá
     private void getCountCartItems(){
         CartAPI cartAPI = ServiceBuilder.buildService(CartAPI.class);
         Call<Integer> request = cartAPI.getTotalItem();
@@ -354,6 +363,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
         });
     }
 
+    //Hàm đếm notify
     private void getCountNotifications(){
         NotificationAPI notificationAPI = ServiceBuilder.buildService(NotificationAPI.class);
         Call<List<Notification>> request = notificationAPI.getNotification();
@@ -426,6 +436,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
         });
     }
 
+    //Lưu token của device để firebase gửi thông báo
     private void saveFirebaseDeviceToken(){
         Token deviceToken = SharedPref.loadToken(mContext,Constants.FIREBASE_TOKEN_PREFS_NAME, Constants.KEY_FIREBASE_TOKEN);
 
@@ -678,6 +689,29 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
             dialog.dismiss();
         });
 
+        // Thêm xử lý cho nút Mua ngay
+        btn_BuyNow.setOnClickListener(v -> {
+            // Tạo CartItemDTO cho sản phẩm vừa chọn
+            CartItemDTO cartItemDTO = new CartItemDTO(product, quantity.get());
+            ArrayList<CartItemDTO> productsToBuy = new ArrayList<>();
+            productsToBuy.add(cartItemDTO);
+
+            // Tính toán giá trị cần thiết
+            int price = product.getPrice() * quantity.get();
+            int productDiscount = 0;
+            int voucherDiscount = 0;
+            int totalAmount = price - productDiscount - voucherDiscount;
+
+            Intent intent = new Intent(mContext, PaymentActivity.class);
+            intent.putExtra("products", productsToBuy);
+            intent.putExtra("totalPrice", com.example.clientsellingmedicine.utils.Convert.convertPrice(price));
+            intent.putExtra("totalProductDiscount", com.example.clientsellingmedicine.utils.Convert.convertPrice(productDiscount));
+            intent.putExtra("totalVoucherDiscount", com.example.clientsellingmedicine.utils.Convert.convertPrice(voucherDiscount));
+            intent.putExtra("totalAmount", com.example.clientsellingmedicine.utils.Convert.convertPrice(totalAmount));
+            // Các giá trị voucher/coupon khác nếu cần
+            dialog.dismiss();
+            mContext.startActivity(intent);
+        });
 
         // show dialog
         dialog.show();

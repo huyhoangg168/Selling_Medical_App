@@ -77,7 +77,6 @@ public class feedAdapter extends RecyclerView.Adapter <feedAdapter.ViewHolder> {
             tvDate = itemView.findViewById(R.id.tvDate);
             ivFeed = itemView.findViewById(R.id.ivFeed);
             layoutFeedItem = itemView.findViewById(R.id.layoutFeedItem);
-
         }
     }
 }

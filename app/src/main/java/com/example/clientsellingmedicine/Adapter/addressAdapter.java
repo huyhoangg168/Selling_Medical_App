@@ -15,7 +15,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.clientsellingmedicine.activity.AddAddressActivity;
+import com.example.clientsellingmedicine.activity.adress.AddAddressActivity;
 import com.example.clientsellingmedicine.R;
 import com.example.clientsellingmedicine.interfaces.IOnProductItemClickListener;
 import com.example.clientsellingmedicine.DTO.AddressDto;

@@ -595,6 +595,17 @@
                     android:layout_width="match_parent"
                     android:layout_height="6dp"
                     android:background="@color/gray" />
+
+<!--                <Button-->
+<!--                    android:id="@+id/btnCancelOrder"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Hủy đơn hàng"-->
+<!--                    android:background="@color/minus_color"-->
+<!--                    android:textColor="@android:color/white"-->
+<!--                    android:layout_margin="16dp"-->
+<!--                    android:padding="12dp" />-->
+
             </LinearLayout>
 
         </ScrollView>
