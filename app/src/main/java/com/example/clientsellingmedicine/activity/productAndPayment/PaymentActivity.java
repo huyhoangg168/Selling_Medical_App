@@ -62,6 +62,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import org.json.JSONObject;
+
 public class PaymentActivity extends AppCompatActivity implements IOnVoucherItemClickListener {
 
     private Context mContext;
@@ -252,6 +254,8 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
 
                     // clear cart items in Shared Preferences
                     SharedPref.clearData(mContext, Constants.CART_PREFS_NAME);
+                }else if (response.code() == 409) {
+                    handleOutOfStock409(response);
                 } else if (response.code() == 401) {
                     Intent intent = new Intent(mContext, LoginActivity.class);
                     finish();
@@ -259,7 +263,7 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
                 } else {
                     Toast.makeText(mContext, "Something was wrong", Toast.LENGTH_LONG).show();
                 }
-            }
+        }
 
             @Override
             public void onFailure(Call<MomoResponse> call, Throwable t) {
@@ -334,14 +338,17 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
 
                     // clear cart items in Shared Preferences
                     SharedPref.clearData(mContext, Constants.CART_PREFS_NAME);
+                }else if (response.code() == 409) {
+                    handleOutOfStock409(response);
                 } else if (response.code() == 401) {
                     Intent intent = new Intent(mContext, LoginActivity.class);
                     finish();
                     mContext.startActivity(intent);
                 } else {
                     Toast.makeText(mContext, "Something was wrong", Toast.LENGTH_LONG).show();
-                }
             }
+
+        }
 
             @Override
             public void onFailure(Call<Order> call, Throwable t) {
@@ -597,6 +604,34 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
                 })
                 .show();
     }
+
+    private String extractErrorMessage(retrofit2.Response<?> response) {
+        try {
+            if (response == null || response.errorBody() == null) return null;
+            String raw = response.errorBody().string();
+            if (raw == null || raw.trim().isEmpty()) return null;
+
+            // thử parse JSON kiểu { "message": "..." }
+            try {
+                JSONObject obj = new JSONObject(raw);
+                if (obj.has("message")) return obj.getString("message");
+                if (obj.has("error")) return obj.getString("error");
+            } catch (Exception ignored) {}
+
+            return raw;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void handleOutOfStock409(retrofit2.Response<?> response) {
+        String msg = extractErrorMessage(response);
+        if (msg == null || msg.trim().isEmpty()) {
+            msg = "Sản phẩm đã hết hàng hoặc không đủ số lượng (người mua trước sẽ được). Vui lòng quay lại giỏ hàng và thử lại.";
+        }
+        showAlertDialog("Thanh toán không thành công", msg);
+    }
+
 
     @Override
     protected void onResume() {

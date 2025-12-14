@@ -60,6 +60,19 @@
                 android:textAlignment="center"
                 android:textColor="@color/header_color"
                 android:textSize="14sp" />
+
+            <!-- Hiển thị số lượng còn lại trong kho -->
+            <TextView
+                android:id="@+id/tvProductStock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:gravity="center"
+                android:text="Còn: 0"
+                android:textSize="11sp"
+                android:textColor="#6B7280" />
         </LinearLayout>
 
 

@@ -43,7 +43,7 @@ public class productAdapter extends RecyclerView.Adapter <productAdapter.ViewHol
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvNameProductItem,tvProductPrice,tv_Discount;
+        public TextView tvNameProductItem,tvProductPrice,tv_Discount, tvProductStock;
         public ImageView ivProductItem;
 
         public LinearLayout layout_Discount,layoutProductItem;
@@ -62,6 +62,7 @@ public class productAdapter extends RecyclerView.Adapter <productAdapter.ViewHol
             layout_Discount = itemView.findViewById(R.id.layout_Discount);
             layoutProductItem = itemView.findViewById(R.id.layoutProductItem);
             tv_Discount = itemView.findViewById(R.id.tv_Discount);
+            tvProductStock = itemView.findViewById(R.id.tvProductStock);
             //xử lý sự kiện khi click nút view
             btnAddtoCartProduct.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -101,6 +102,20 @@ public class productAdapter extends RecyclerView.Adapter <productAdapter.ViewHol
         String unit = product.getUnit().getName();
         String price = Convert.convertPrice(product.getPrice());
         holder.tvProductPrice.setText(price+"/"+unit);
+        Integer qty = product.getQuantity();
+        int stock = (qty == null) ? 0 : qty;
+
+        if (stock <= 0) {
+            holder.tvProductStock.setText("Hết hàng");
+            holder.btnAddtoCartProduct.setEnabled(false);
+            holder.btnAddtoCartProduct.setAlpha(0.6f);
+            holder.btnAddtoCartProduct.setText("Hết hàng");
+        } else {
+            holder.tvProductStock.setText("Còn: " + stock);
+            holder.btnAddtoCartProduct.setEnabled(true);
+            holder.btnAddtoCartProduct.setAlpha(1f);
+            holder.btnAddtoCartProduct.setText("Chọn mua");
+        }
         Glide.with(holder.itemView.getContext())
                 .load(product.getImage())
                 .placeholder(R.drawable.loading_icon) // Hình ảnh thay thế khi đang tải

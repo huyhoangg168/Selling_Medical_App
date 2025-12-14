@@ -50,6 +50,20 @@ public class productDiscountAdapter extends RecyclerView.Adapter <productDiscoun
         String unit = product.getUnit().getName();
         String price = convertPrice(product.getPrice());
         holder.tvProductPrice.setText(price+" đ/"+unit);
+        Integer qty = product.getQuantity();
+        int stock = (qty == null) ? 0 : qty;
+
+        if (stock <= 0) {
+            holder.tvProductStock.setText("Hết hàng");
+            holder.btnAddtoCartProduct.setEnabled(false);
+            holder.btnAddtoCartProduct.setAlpha(0.6f);
+            holder.btnAddtoCartProduct.setText("Hết hàng");
+        } else {
+            holder.tvProductStock.setText("Còn: " + stock);
+            holder.btnAddtoCartProduct.setEnabled(true);
+            holder.btnAddtoCartProduct.setAlpha(1f);
+            holder.btnAddtoCartProduct.setText("Chọn mua");
+        }
         Glide.with(holder.itemView.getContext())
                 .load(product.getImage())
                 .placeholder(R.drawable.loading_icon) // Hình ảnh thay thế khi đang tải
@@ -64,7 +78,7 @@ public class productDiscountAdapter extends RecyclerView.Adapter <productDiscoun
 
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView tvNameProductItem,tvProductPrice;
+        public TextView tvNameProductItem,tvProductPrice, tvProductStock;
         public ImageView ivProductItem;
         public LinearLayout layout_Discount;
 
@@ -80,6 +94,7 @@ public class productDiscountAdapter extends RecyclerView.Adapter <productDiscoun
             btnAddtoCartProduct = itemView.findViewById(R.id.btnAddtoCartProduct);
             ivProductItem = itemView.findViewById(R.id.ivProductItem);
             layout_Discount = itemView.findViewById(R.id.layout_Discount);
+            tvProductStock = itemView.findViewById(R.id.tvProductStock);
             //xử lý sự kiện khi click nút view
             btnAddtoCartProduct.setOnClickListener(new View.OnClickListener() {
                 @Override

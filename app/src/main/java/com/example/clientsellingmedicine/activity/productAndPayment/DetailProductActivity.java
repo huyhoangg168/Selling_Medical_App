@@ -113,6 +113,30 @@ public class DetailProductActivity extends AppCompatActivity {
                     .placeholder(R.drawable.loading_icon) // Hình ảnh thay thế khi đang tải
                     .error(R.drawable.error_image) // Hình ảnh thay thế khi có lỗi
                     .into(imv_ProductImage);
+
+            Integer qtyObj = product.getQuantity();
+            int stock = (qtyObj == null) ? 0 : qtyObj;
+
+            if (stock <= 0) {
+                btn_AddToCart.setEnabled(false);
+                btn_BuyNow.setEnabled(false);
+
+                btn_AddToCart.setAlpha(0.6f);
+                btn_BuyNow.setAlpha(0.6f);
+
+                btn_AddToCart.setText("Hết hàng");
+                btn_BuyNow.setText("Hết hàng");
+            } else {
+                btn_AddToCart.setEnabled(true);
+                btn_BuyNow.setEnabled(true);
+
+                btn_AddToCart.setAlpha(1f);
+                btn_BuyNow.setAlpha(1f);
+
+                btn_AddToCart.setText("Thêm vào giỏ");
+                btn_BuyNow.setText("Mua ngay");
+            }
+
         }
     }
 
@@ -153,6 +177,8 @@ public class DetailProductActivity extends AppCompatActivity {
     private void showAddToCartDialog(Product product) {
 
         final AtomicInteger quantity = new AtomicInteger(1);
+        Integer qtyObj = product.getQuantity();
+        final int stock = (qtyObj == null) ? 0 : qtyObj;
         final Dialog dialog = new Dialog(this);
 
 
@@ -169,6 +195,23 @@ public class DetailProductActivity extends AppCompatActivity {
         ImageView iv_back = dialog.findViewById(R.id.iv_back);
         Button btn_AddToCart = dialog.findViewById(R.id.btn_AddToCart);
         Button btn_BuyNow = dialog.findViewById(R.id.btn_BuyNow);
+
+        if (stock <= 0) {
+            tv_quantity.setText("0");
+
+            ll_minus.setEnabled(false);
+            ll_plus.setEnabled(false);
+
+            btn_AddToCart.setEnabled(false);
+            btn_BuyNow.setEnabled(false);
+
+            btn_AddToCart.setAlpha(0.6f);
+            btn_BuyNow.setAlpha(0.6f);
+
+            btn_AddToCart.setText("Hết hàng");
+            btn_BuyNow.setText("Hết hàng");
+        }
+
 
         // add event
         iv_back.setOnClickListener(v -> dialog.dismiss());
@@ -190,11 +233,30 @@ public class DetailProductActivity extends AppCompatActivity {
 
         // set quantity plus
         ll_plus.setOnClickListener(v -> {
-            quantity.incrementAndGet();
-            tv_quantity.setText(String.valueOf(quantity.get()));
+            if (stock <= 0) return;
+
+            if (quantity.get() < stock) {
+                quantity.incrementAndGet();
+                tv_quantity.setText(String.valueOf(quantity.get()));
+            } else {
+                Toast.makeText(mContext,
+                        "Chỉ còn " + stock + " sản phẩm trong kho",
+                        Toast.LENGTH_SHORT).show();
+            }
         });
 
         btn_AddToCart.setOnClickListener(v -> {
+            if (stock <= 0) {
+                Toast.makeText(mContext, "Sản phẩm đã hết hàng", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (quantity.get() > stock) {
+                Toast.makeText(mContext,
+                        "Số lượng vượt tồn kho (" + stock + ")",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             CartItem cartItem = new CartItem(0, product.getId(), quantity.get());
             addToCart(cartItem)
                     .thenAccept(result -> {
@@ -228,6 +290,17 @@ public class DetailProductActivity extends AppCompatActivity {
 
         // Thêm xử lý cho nút Mua ngay
         btn_BuyNow.setOnClickListener(v -> {
+            if (stock <= 0) {
+                Toast.makeText(mContext, "Sản phẩm đã hết hàng", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (quantity.get() > stock) {
+                Toast.makeText(mContext,
+                        "Số lượng vượt tồn kho (" + stock + ")",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             // Tạo CartItemDTO cho sản phẩm vừa chọn
             CartItemDTO cartItemDTO = new CartItemDTO(product, quantity.get());
             ArrayList<CartItemDTO> productsToBuy = new ArrayList<>();
