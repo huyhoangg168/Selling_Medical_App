@@ -25,6 +25,7 @@ import com.example.clientsellingmedicine.activity.authAndAccount.UnLoginProfileF
 import com.example.clientsellingmedicine.activity.coupon.ExchangeFragment;
 import com.example.clientsellingmedicine.activity.order.OrderFragment;
 import com.example.clientsellingmedicine.utils.Constants;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -47,10 +48,10 @@ public class MainActivity extends AppCompatActivity
         mContext = this;
 
         // *** MỚI: nếu là admin thì đá sang dashboard luôn ***
-        Token token = SharedPref.loadToken(mContext, Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN);
+        Token token = EncryptedSharedPrefManager.loadToken(mContext);
         if (token != null) {
             // đã đăng nhập rồi
-            UserDTO user = SharedPref.loadUser(mContext, Constants.USER_PREFS_NAME, Constants.KEY_USER);
+            UserDTO user = EncryptedSharedPrefManager.loadUser(mContext);
             if (user != null && "admin".equalsIgnoreCase(user.getRole())) {
                 // Admin thì không vào MainActivity, chuyển luôn sang AdminProductActivity
                 startActivity(new Intent(MainActivity.this, AdminProductActivity.class));
@@ -127,8 +128,7 @@ public class MainActivity extends AppCompatActivity
             return true;
 
         } else if (id == R.id.navigation_user) {
-            Token token = SharedPref.loadToken(mContext, Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN);
-            if (token == null) {
+            Token token = EncryptedSharedPrefManager.loadToken(mContext);            if (token == null) {
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.container, unLoginProfileFragment)

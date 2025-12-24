@@ -66,20 +66,4 @@ public class SharedPref {
         return gson.fromJson(json, Token.class);
     }
 
-    public static void saveUser(Context context, String prefsName, String key, UserDTO user) {
-        Gson gson = new Gson();
-        String json = gson.toJson(user);
-        SharedPreferences sharedPreferences = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
-        sharedPreferences.edit().putString(key, json).apply();
-    }
-
-    public static UserDTO loadUser(Context context, String prefsName, String key) {
-        SharedPreferences sharedPreferences = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
-        String json = sharedPreferences.getString(key, null);
-        if (json == null) return null;
-        Gson gson = new Gson();
-        return gson.fromJson(json, UserDTO.class);
-    }
-
-
 }

@@ -7,6 +7,7 @@ import com.example.clientsellingmedicine.activity.MyApplication;
 import com.example.clientsellingmedicine.DTO.Token;
 import com.example.clientsellingmedicine.utils.Constants;
 import com.example.clientsellingmedicine.utils.SharedPref;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.example.clientsellingmedicine.BuildConfig;
@@ -45,8 +46,7 @@ public class ServiceBuilder {
                             //Build new request
                             Request.Builder builder = originalRequest.newBuilder();
 
-                            Token token = SharedPref.loadToken(MyApplication.getContext(), Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN);
-
+                            Token token = EncryptedSharedPrefManager.loadToken(MyApplication.getContext());
                             setAuthHeader(builder, token);
 
                             // Add headers to the builder before building the request
@@ -62,13 +62,11 @@ public class ServiceBuilder {
                                 if (!isRefreshing) { // Kiểm tra trạng thái làm mới token
                                     synchronized (okHttp) {
                                         isRefreshing = true; // Đánh dấu bắt đầu quá trình làm mới token
-                                        Token currentToken = SharedPref.loadToken(MyApplication.getContext(), Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN);
-
+                                        Token currentToken = EncryptedSharedPrefManager.loadToken(MyApplication.getContext());
                                         if (currentToken != null && currentToken.getToken().equals(token.getToken())) {
                                             int code = refreshToken() / 100;
                                             if (code == 2) { // Nếu refresh token thành công
-                                                Token newToken = SharedPref.loadToken(MyApplication.getContext(), Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN);
-                                                setAuthHeader(builder, newToken);
+                                                Token newToken = EncryptedSharedPrefManager.loadToken(MyApplication.getContext());                                                setAuthHeader(builder, newToken);
                                                 Request newRequest = builder.build();
                                                 Response newResponse = chain.proceed(newRequest);
                                                 isRefreshing = false; // Đánh dấu kết thúc quá trình làm mới token
@@ -112,8 +110,7 @@ public class ServiceBuilder {
 
             if(response.isSuccessful()) {
                 Token newToken = response.body();
-                SharedPref.saveToken(MyApplication.getContext(), Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN, newToken);
-                //Log.d("tag", "onResponse: " + response.body());
+                EncryptedSharedPrefManager.saveToken(MyApplication.getContext(), newToken);
             }
             return response.code();
         } catch (IOException e) {
