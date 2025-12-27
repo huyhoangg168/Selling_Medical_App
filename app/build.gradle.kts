@@ -17,13 +17,21 @@ android {
     namespace = "com.example.clientsellingmedicine"
     compileSdk = 34
 
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file("key_releases/medimate_key_apk.jks")
+            storePassword = "123456"
+            keyAlias = "medimate_v1"
+            keyPassword = "123456"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.clientsellingmedicine"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -36,22 +44,22 @@ android {
             buildConfigField("String", "API_KEY", "\"$apiKey\"")
             buildConfigField("String", "API_URL", "\"$apiUrl\"")
         }
-//        getByName("release") {
-//            isMinifyEnabled = false
-//            proguardFiles(
-//                getDefaultProguardFile("proguard-android-optimize.txt"),
-//                "proguard-rules.pro"
-//            )
-//
-//            buildConfigField("String", "API_KEY", "\"$apiKey\"")
-//            buildConfigField("String", "API_URL", "\"$apiUrl\"")
-//        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
 
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
+            signingConfig = signingConfigs.getByName("release")
+
+            buildConfigField("String", "API_KEY", "\"$apiKey\"")
+            buildConfigField("String", "API_URL", "\"$apiUrl\"")
+        }
+    }
 }
 
 dependencies {
