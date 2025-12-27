@@ -234,7 +234,7 @@
                     android:layout_height="match_parent"
                     android:layout_marginStart="16dp"
                     android:gravity="center"
-                    android:text="Về mediMate"
+                    android:text="Về mediCare"
                     android:textSize="16sp" />
 
                 <Space

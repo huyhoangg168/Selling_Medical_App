@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.clientsellingmedicine.activity.MainActivity;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.LoadingManager;
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.clientsellingmedicine.DTO.GoogleToken;
@@ -82,12 +83,12 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         //login with google
-        oneTapClient = Identity.getSignInClient(this);
+        oneTapClient = Identity.getSignInClient(this); //ggonetap khởi tạo
         signUpRequest = BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
                         // Your server's client ID, not your Android client ID.
-                        .setServerClientId(getString(R.string.web_client_id))
+                        .setServerClientId(getString(R.string.web_client_id)) // gg client ID
                         // Show all accounts on the device.
                         .setFilterByAuthorizedAccounts(false)
                         .build())
@@ -96,9 +97,9 @@ public class RegisterActivity extends AppCompatActivity {
         activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), result -> {
             try {
                 SignInCredential credential = oneTapClient.getSignInCredentialFromIntent(result.getData());
-                String idToken = credential.getGoogleIdToken();
+                String idToken = credential.getGoogleIdToken(); // GG trả về token GG
                 if (idToken != null) {
-                    LoginWithGoogle(new GoogleToken(idToken));
+                    LoginWithGoogle(new GoogleToken(idToken)); //GỬi token lên BE
                 } else {
                     displayAlertDialog("Đăng nhập thất bại","Vui lòng kiểm tra lại tài khoản đăng nhập");
                 }
@@ -248,7 +249,7 @@ public class RegisterActivity extends AppCompatActivity {
             public void onResponse(Call<Token> call, Response<Token> response) {
                 if (response.isSuccessful()) {
                     Token token = response.body();
-                    SharedPref.saveToken(mContext, Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN, token);
+                    EncryptedSharedPrefManager.saveToken(mContext, token);
                     Intent intent = new Intent(mContext, MainActivity.class);
                     startActivity(intent);
                 } else {

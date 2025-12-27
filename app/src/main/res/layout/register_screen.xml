@@ -222,21 +222,6 @@
                     android:paddingLeft="30dp"
                     android:drawablePadding="40dp"
                    />
-                <View
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"></View>
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btn_facebook_signin"
-                    android:layout_width="300dp"
-                    android:layout_height="50dp"
-                    android:text="Tiếp tục với Facebook"
-                    android:background="@drawable/btn_facebook"
-                    android:textAllCaps="false"
-                    android:drawableStart="@drawable/ic_facebook"
-                    android:textAlignment="textStart"
-                    android:paddingLeft="30dp"
-                    android:drawablePadding="40dp"/>
             </LinearLayout>
 
             <LinearLayout

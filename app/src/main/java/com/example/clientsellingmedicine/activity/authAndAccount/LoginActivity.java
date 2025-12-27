@@ -27,6 +27,7 @@ import com.example.clientsellingmedicine.api.LoginAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.api.UserAPI;
 import com.example.clientsellingmedicine.utils.Constants;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.identity.Identity;
@@ -165,15 +166,8 @@ public class LoginActivity extends AppCompatActivity {
 
                     //save jwt token on client
                     Token token = response.body();
-                    SharedPref.saveToken(mContext, Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN, token);
+                    EncryptedSharedPrefManager.saveToken(LoginActivity.this, token);
 
-                    // Lưu token như cũ
-                    SharedPref.saveToken(
-                            LoginActivity.this,
-                            Constants.TOKEN_PREFS_NAME,
-                            Constants.KEY_TOKEN,
-                            token
-                    );
 
                     // GỌI API LẤY USER ĐỂ BIẾT ROLE
                     UserAPI userAPI = ServiceBuilder.buildService(UserAPI.class);
@@ -185,14 +179,9 @@ public class LoginActivity extends AppCompatActivity {
                             if (response.isSuccessful() && response.body() != null) {
 
                                 UserDTO user = response.body();
-
                                 // (Tuỳ chọn) Lưu user lại
-                                SharedPref.saveUser(
-                                        LoginActivity.this,
-                                        Constants.USER_PREFS_NAME,
-                                        Constants.KEY_USER,
-                                        user
-                                );
+                                EncryptedSharedPrefManager.saveUser(LoginActivity.this, user);
+
 
                                 // ✅ Rẽ nhánh theo role
                                 if ("admin".equalsIgnoreCase(user.getRole())) {
@@ -262,7 +251,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     //save jwt token on client
                     Token token = response.body();
-                    SharedPref.saveToken(mContext, Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN, token);
+                    EncryptedSharedPrefManager.saveToken(LoginActivity.this, token);
 
                     //navigate
                     Intent intent = new Intent(mContext, MainActivity.class);

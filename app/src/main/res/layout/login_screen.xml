@@ -213,23 +213,6 @@
                     android:text="Tiếp tục với Google"
                     android:textAlignment="textStart"
                     android:textAllCaps="false" />
-
-                <View
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"></View>
-
-                <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/btn_facebook_signin"
-                    android:layout_width="300dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/btn_facebook"
-                    android:drawableStart="@drawable/ic_facebook"
-                    android:drawablePadding="40dp"
-                    android:paddingLeft="30dp"
-                    android:text="Tiếp tục với Facebook"
-                    android:textAlignment="textStart"
-                    android:textAllCaps="false" />
             </LinearLayout>
 
             <LinearLayout

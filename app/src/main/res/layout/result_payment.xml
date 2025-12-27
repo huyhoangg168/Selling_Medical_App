@@ -87,7 +87,7 @@
             android:gravity="center"
             android:padding="8dp"
             android:textSize="16dp"
-            android:text="Đơn hàng của quý khách đã được thanh toán thành công. Medimate sẽ sớm liên hệ với quý khách để bàn giao sản phẩm"
+            android:text="Đơn hàng của quý khách đã được thanh toán thành công. Medicare sẽ sớm liên hệ với quý khách để bàn giao sản phẩm"
             android:textColor="@color/common_google_signin_btn_text_light"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

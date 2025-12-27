@@ -29,6 +29,7 @@ import com.example.clientsellingmedicine.api.LogoutAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.api.UserAPI;
 import com.example.clientsellingmedicine.utils.Constants;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -137,13 +138,9 @@ public class ProfileFragment extends Fragment {
                                 .circleCrop()
                                 .into(iv_Avatar);
 
-                        // 2. Lưu user (trong đó có role) để chỗ khác dùng nếu cần
-                        SharedPref.saveUser(
-                                mContext,
-                                Constants.USER_PREFS_NAME,
-                                Constants.KEY_USER,
-                                user
-                        );
+                        // 2. Lưu user mã hóa (trong đó có role) để chỗ khác dùng nếu cần
+                        EncryptedSharedPrefManager.saveUser(mContext, user);
+
                     }
                 } else if (response.code() == 401) {
                     navigateToLogin();
@@ -173,7 +170,7 @@ public class ProfileFragment extends Fragment {
             public void onResponse(Call<ResponseDto> call, Response<ResponseDto> response) {
                 if (response.isSuccessful()) {
                     // remove token
-                    SharedPref.removeData(mContext, Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN);
+                    EncryptedSharedPrefManager.clearAll(mContext);
                     // remove checkbox product
                     SharedPref.removeData(mContext, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED);
                     // return to login screen and finish all activity
@@ -182,6 +179,7 @@ public class ProfileFragment extends Fragment {
                     startActivity(intent);
                     getActivity().finish();
                 } else if (response.code() == 401) {
+                    EncryptedSharedPrefManager.clearAll(mContext);
                     Intent intent = new Intent(mContext, LoginActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
