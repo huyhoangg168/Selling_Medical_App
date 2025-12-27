@@ -3,6 +3,7 @@ package com.example.clientsellingmedicine.api;
 
 import android.os.Build;
 
+import com.example.clientsellingmedicine.DTO.RefreshTokenRequest;
 import com.example.clientsellingmedicine.activity.MyApplication;
 import com.example.clientsellingmedicine.DTO.Token;
 import com.example.clientsellingmedicine.utils.Constants;
@@ -102,19 +103,45 @@ public class ServiceBuilder {
     }
 
     private static int refreshToken() {
+        // 1. Lấy Token đang lưu trong máy
+        Token storedToken = EncryptedSharedPrefManager.loadToken(MyApplication.getContext());
+
+        // Nếu không có refresh token -> Không thể làm mới -> Trả về lỗi để logout
+        if (storedToken == null || storedToken.getRefreshToken() == null) {
+            return 401;
+        }
+
+        // 2. Chuẩn bị API call
         LoginAPI loginAPI = ServiceBuilder.buildService(LoginAPI.class);
-        Call<Token> requestRefreshToken = loginAPI.refreshToken();
+
+        // Tạo body request
+        RefreshTokenRequest requestBody = new RefreshTokenRequest(storedToken.getRefreshToken());
+        Call<Token> call = loginAPI.refreshToken(requestBody);
 
         try {
-            retrofit2.Response<Token> response = requestRefreshToken.execute();
+            // 3. Gọi API đồng bộ (Synchronous)
+            retrofit2.Response<Token> response = call.execute();
 
-            if(response.isSuccessful()) {
-                Token newToken = response.body();
-                EncryptedSharedPrefManager.saveToken(MyApplication.getContext(), newToken);
+            if (response.isSuccessful() && response.body() != null) {
+                // 4. XỬ LÝ DỮ LIỆU MỚI (QUAN TRỌNG)
+                Token responseToken = response.body();
+
+                // Vì Server chỉ trả về AccessToken mới, còn RefreshToken thì null
+                // Ta phải tạo một object Token mới gồm: AccessToken Mới + RefreshToken Cũ
+                Token newTokenToSave = new Token();
+                newTokenToSave.setToken(responseToken.getToken()); // Token mới
+                newTokenToSave.setRefreshToken(storedToken.getRefreshToken()); // Token cũ
+
+                // 5. Lưu lại vào máy
+                EncryptedSharedPrefManager.saveToken(MyApplication.getContext(), newTokenToSave);
+
+                return 200; // Thành công
+            } else {
+                return response.code(); // Lỗi từ server (ví dụ refresh token hết hạn)
             }
-            return response.code();
         } catch (IOException e) {
-            return 500; // Trả về mã lỗi mặc định
+            e.printStackTrace();
+            return 500; // Lỗi mạng
         }
     }
 

@@ -75,8 +75,10 @@ public class MyApplication extends Application {
 
     // save to Shared Preferences
     private void saveFirebaseDeviceToken(String token) {
-        Token saveToken = new Token(token);
-        SharedPref.saveToken(this, Constants.FIREBASE_TOKEN_PREFS_NAME, Constants.KEY_FIREBASE_TOKEN, saveToken);
+        SharedPref.saveString(this,
+                Constants.FIREBASE_TOKEN_PREFS_NAME,
+                Constants.KEY_FIREBASE_TOKEN,
+                token);
     }
 
 }

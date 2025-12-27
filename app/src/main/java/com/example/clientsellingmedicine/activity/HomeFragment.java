@@ -438,10 +438,15 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
 
     //Lưu token của device để firebase gửi thông báo
     private void saveFirebaseDeviceToken(){
-        Token deviceToken = SharedPref.loadToken(mContext,Constants.FIREBASE_TOKEN_PREFS_NAME, Constants.KEY_FIREBASE_TOKEN);
+        String tokenString = SharedPref.getString(getContext(), Constants.FIREBASE_TOKEN_PREFS_NAME, Constants.KEY_FIREBASE_TOKEN, null);
+
+        if (tokenString != null) {
+            // 2. Tự tạo object Token để gửi lên server (vì API yêu cầu object)
+            Token tokenObj = new Token();
+            tokenObj.setToken(tokenString);
 
         NotificationAPI notificationAPI = ServiceBuilder.buildService(NotificationAPI.class);
-        Call<Void> request = notificationAPI.saveDevice(deviceToken);
+        Call<Void> request = notificationAPI.saveDevice(tokenObj);
 
         request.enqueue(new Callback<Void>() {
 
@@ -460,7 +465,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
                 Log.d("FCM", "Save firebase device token failed ! ");
             }
         });
-    }
+    }   }
 
     private void getFeeds(){
         new FetchFeedTask().execute((Void) null);

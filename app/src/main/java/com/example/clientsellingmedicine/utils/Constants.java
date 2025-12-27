@@ -18,4 +18,8 @@ public class Constants {
 
     public static final String FIREBASE_TOKEN_PREFS_NAME = "firebaseToken";
     public static final String KEY_FIREBASE_TOKEN = "firebaseTokenKey";
+
+    // Thêm key cho Biometric
+    public static final String BIOMETRIC_PREFS_NAME = "biometricPrefs";
+    public static final String KEY_BIOMETRIC_ENABLED = "isBiometricEnabled";
 }

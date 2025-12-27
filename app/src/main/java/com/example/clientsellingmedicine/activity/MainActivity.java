@@ -20,6 +20,7 @@ import com.example.clientsellingmedicine.DTO.UserDTO;
 import com.example.clientsellingmedicine.R;
 import com.example.clientsellingmedicine.DTO.Token;
 import com.example.clientsellingmedicine.activity.authAndAccount.AdminProductActivity;
+import com.example.clientsellingmedicine.activity.authAndAccount.LoginActivity;
 import com.example.clientsellingmedicine.activity.authAndAccount.ProfileFragment;
 import com.example.clientsellingmedicine.activity.authAndAccount.UnLoginProfileFragment;
 import com.example.clientsellingmedicine.activity.coupon.ExchangeFragment;
@@ -47,17 +48,32 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         mContext = this;
 
-        // *** MỚI: nếu là admin thì đá sang dashboard luôn ***
         Token token = EncryptedSharedPrefManager.loadToken(mContext);
-        if (token != null) {
-            // đã đăng nhập rồi
-            UserDTO user = EncryptedSharedPrefManager.loadUser(mContext);
-            if (user != null && "admin".equalsIgnoreCase(user.getRole())) {
-                // Admin thì không vào MainActivity, chuyển luôn sang AdminProductActivity
-                startActivity(new Intent(MainActivity.this, AdminProductActivity.class));
-                finish();
-                return; // nhớ return để không chạy tiếp code dưới
-            }
+        UserDTO user = EncryptedSharedPrefManager.loadUser(mContext);
+
+        // 1. Kiểm tra trạng thái "Soft Logout" (Chờ vân tay)
+        // Nếu object Token tồn tại (để giữ refresh token) NHƯNG AccessToken lại là NULL
+        // => Nghĩa là User đã Logout và đang chờ quét vân tay.
+        // => KHÔNG ĐƯỢC CHO VÀO MAIN (Sẽ crash vì thiếu token gọi API).
+        if (token != null && token.getToken() == null) {
+            navigateToLogin();
+            return; // Dừng code tại đây, không chạy xuống dưới nữa
+        }
+
+        // 2. Kiểm tra lỗi dữ liệu (Token Zombie)
+        // Trường hợp hiếm: Có Token nhưng thông tin User lại bị Null (do lỗi lúc logout hoặc lỗi lưu trữ)
+        // => Cũng đá về Login để đăng nhập lại cho sạch.
+        if (token != null && user == null) {
+            navigateToLogin();
+            return;
+        }
+
+        // 3. Kiểm tra quyền Admin
+        // Lúc này chắc chắn User != null và Token != null
+        if (token != null && "admin".equalsIgnoreCase(user.getRole())) {
+            startActivity(new Intent(MainActivity.this, AdminProductActivity.class));
+            finish();
+            return;
         }
 
         setContentView(R.layout.fragment);
@@ -93,6 +109,15 @@ public class MainActivity extends AppCompatActivity
 
 
         getOnBackPressedDispatcher().addCallback(this, callback);
+    }
+
+    // [HÀM MỚI] Hàm điều hướng về Login và xóa Activity Stack
+    private void navigateToLogin() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        // Cờ này giúp xóa sạch MainActivity cũ khỏi bộ nhớ, tránh người dùng Back lại được
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     HomeFragment homeFragment = new HomeFragment();

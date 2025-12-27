@@ -1,5 +1,7 @@
 package com.example.clientsellingmedicine.DTO;
 
+import com.google.gson.annotations.SerializedName;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Token {
+    @SerializedName(value = "token", alternate = {"accessToken"})
     private String token;
-    //private String refreshToken;
+
+    @SerializedName("refreshToken")
+    private String refreshToken;
 }

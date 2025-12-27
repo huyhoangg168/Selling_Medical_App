@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +18,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricPrompt;
 
 import com.example.clientsellingmedicine.DTO.UserDTO;
 import com.example.clientsellingmedicine.R;
@@ -26,6 +29,7 @@ import com.example.clientsellingmedicine.activity.MainActivity;
 import com.example.clientsellingmedicine.api.LoginAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.api.UserAPI;
+import com.example.clientsellingmedicine.utils.BiometricHelper;
 import com.example.clientsellingmedicine.utils.Constants;
 import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
@@ -50,11 +54,14 @@ public class LoginActivity extends AppCompatActivity {
     ImageView iv_back;
     Button btn_login,btn_google_signin;
     TextView tvRegister;
+    ImageButton btn_fingerprint;
 
     private SignInClient oneTapClient;
     private BeginSignInRequest signUpRequest;
     private static final int REQ_ONE_TAP = 2;  // Can be any integer unique to the Activity.
     private boolean showOneTapUI = true;
+    // Biến lưu trạng thái token để dùng lại khi click nút
+    private String savedRefreshTokenForBiometric = null;
     ActivityResultLauncher<IntentSenderRequest> activityResultLauncher;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +105,11 @@ public class LoginActivity extends AppCompatActivity {
              }
          });
 
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            if (!isFinishing() && !isDestroyed()) { // Kiểm tra activity còn sống không
+                setupBiometricFeature();
+            }
+        }, 300);
     }
 
 
@@ -108,6 +120,7 @@ public class LoginActivity extends AppCompatActivity {
         btn_google_signin = findViewById(R.id.btn_google_signin);
         tvRegister = findViewById(R.id.tvRegister);
         iv_back = findViewById(R.id.iv_back);
+        btn_fingerprint = findViewById(R.id.btn_fingerprint);
     }
     private void addEvents() {
         TextWatcher textWatcher = new TextWatcher() {
@@ -152,6 +165,12 @@ public class LoginActivity extends AppCompatActivity {
                     Log.d("TAG", e.getLocalizedMessage());
                 }));
 
+        btn_fingerprint.setOnClickListener(v -> {
+            // Kiểm tra lại lần nữa cho chắc chắn
+            if (savedRefreshTokenForBiometric != null) {
+                showBiometricPrompt(savedRefreshTokenForBiometric);
+            }
+        });
     }
 
 
@@ -282,5 +301,121 @@ public class LoginActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
         finish();
+    }
+
+    // --- [SỬA ĐỔI] LOGIC VÂN TAY ---
+
+    private void setupBiometricFeature() {
+        // 1. Kiểm tra Setting của User
+        boolean isBiometricEnabled = SharedPref.getBoolean(mContext, Constants.BIOMETRIC_PREFS_NAME, Constants.KEY_BIOMETRIC_ENABLED, false);
+
+        // 2. Kiểm tra Token trong máy
+        Token token = EncryptedSharedPrefManager.loadToken(mContext);
+
+        // Logic hiển thị nút
+        if (isBiometricEnabled && token != null && token.getRefreshToken() != null) {
+            // Đủ điều kiện: Hiện nút và lưu token tạm để dùng khi click
+            btn_fingerprint.setVisibility(View.VISIBLE);
+            savedRefreshTokenForBiometric = token.getRefreshToken();
+
+            // Tự động bật Prompt ngay khi vào màn hình (Trải nghiệm tốt)
+            showBiometricPrompt(savedRefreshTokenForBiometric);
+
+        } else {
+            // Không đủ điều kiện (Chưa bật setting hoặc chưa từng đăng nhập): Ẩn nút
+            btn_fingerprint.setVisibility(View.GONE);
+            savedRefreshTokenForBiometric = null;
+        }
+    }
+
+    private void showBiometricPrompt(String refreshToken) {
+        BiometricHelper.authenticate(this, new BiometricHelper.BiometricCallback() {
+            @Override
+            public void onSuccess(BiometricPrompt.AuthenticationResult result) {
+                // Vân tay đúng -> Gọi API xin Token mới
+                performBiometricLogin(refreshToken);
+            }
+
+            @Override
+            public void onFailure() {
+                // Người dùng bấm Hủy hoặc sai vân tay quá nhiều lần
+                // Không làm gì cả, nút btn_fingerprint vẫn còn đó để họ bấm lại nếu muốn
+            }
+        });
+    }
+
+    private void performBiometricLogin(String refreshToken) {
+        // Hiển thị loading nếu muốn...
+        Toast.makeText(mContext, "Đang xác thực...", Toast.LENGTH_SHORT).show();
+
+        LoginAPI loginAPI = ServiceBuilder.buildService(LoginAPI.class);
+        // Tạo request body (nhớ import class RefreshTokenRequest bạn đã tạo)
+        com.example.clientsellingmedicine.DTO.RefreshTokenRequest request =
+                new com.example.clientsellingmedicine.DTO.RefreshTokenRequest(refreshToken);
+
+        Call<Token> call = loginAPI.refreshToken(request);
+        call.enqueue(new Callback<Token>() {
+            @Override
+            public void onResponse(Call<Token> call, Response<Token> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        // 1. Lấy Access Token Mới
+                        String newAccessToken = response.body().getToken();
+
+                    // 2. Ghép với Refresh Token cũ để lưu lại
+                    Token newTokenToSave = new Token();
+                    newTokenToSave.setToken(newAccessToken);
+                    newTokenToSave.setRefreshToken(refreshToken); // Giữ cái cũ
+
+                    EncryptedSharedPrefManager.saveToken(LoginActivity.this, newTokenToSave);
+
+                    // 3. Gọi tiếp API lấy thông tin User để biết Role và vào màn hình chính
+                    fetchUserAndNavigate();
+
+                } else {
+                    // Token hết hạn (30 ngày) hoặc Server lỗi
+                    Toast.makeText(mContext, "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại", Toast.LENGTH_LONG).show();
+                    // Xóa token hỏng đi để lần sau không hỏi vân tay nữa
+                    EncryptedSharedPrefManager.clearAll(mContext);
+
+                    btn_fingerprint.setVisibility(View.GONE);
+                    savedRefreshTokenForBiometric = null;
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Token> call, Throwable t) {
+                Toast.makeText(mContext, "Lỗi kết nối mạng", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void fetchUserAndNavigate() {
+        UserAPI userAPI = ServiceBuilder.buildService(UserAPI.class);
+        userAPI.getUser().enqueue(new Callback<UserDTO>() {
+            @Override
+            public void onResponse(Call<UserDTO> call, Response<UserDTO> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserDTO user = response.body();
+                    EncryptedSharedPrefManager.saveUser(LoginActivity.this, user);
+
+                    if ("admin".equalsIgnoreCase(user.getRole())) {
+                        startActivity(new Intent(LoginActivity.this, AdminProductActivity.class));
+                    } else {
+                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    }
+                    finish();
+                } else {
+                    // Lấy user thất bại -> Vẫn cho vào Main nhưng có thể lỗi hiển thị
+                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserDTO> call, Throwable t) {
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
+            }
+        });
     }
 }

@@ -49,21 +49,30 @@ public class SharedPref {
         editor.apply();
     }
 
-    public static void saveToken(Context context, String prefsName, String key, Token value) {
-        Gson gson = new Gson();
-        String json = gson.toJson(value);
+    // ---  HÀM XỬ LÝ BOOLEAN CHO VÂN TAY ---
+
+    public static void saveBoolean(Context context, String prefsName, String key, boolean value) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(key, json);
+        editor.putBoolean(key, value);
         editor.apply();
     }
 
-
-    public static Token loadToken(Context context, String prefsName, String key) {
+    public static boolean getBoolean(Context context, String prefsName, String key, boolean defaultValue) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
-        String json = sharedPreferences.getString(key, null);
-        Gson gson = new Gson();
-        return gson.fromJson(json, Token.class);
+        return sharedPreferences.getBoolean(key, defaultValue);
     }
 
+    // --- THÊM MỚI: HÀM LƯU STRING (Dùng cho Firebase Token) ---
+    public static void saveString(Context context, String prefsName, String key, String value) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(key, value);
+        editor.apply();
+    }
+
+    public static String getString(Context context, String prefsName, String key, String defaultValue) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
+        return sharedPreferences.getString(key, defaultValue);
+    }
 }
