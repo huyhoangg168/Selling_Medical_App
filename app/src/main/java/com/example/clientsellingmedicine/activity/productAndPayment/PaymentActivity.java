@@ -46,6 +46,7 @@ import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.utils.Constants;
 import com.example.clientsellingmedicine.utils.Convert;
 import com.example.clientsellingmedicine.utils.SharedPref;
+import com.example.clientsellingmedicine.utils.CryptoManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -88,13 +89,14 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
 
     private List<CartItemDTO> products;
 
-
+    private CryptoManager cryptoManager;
     private couponCheckboxAdapter couponCheckboxAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+        cryptoManager = new CryptoManager(this);
         setContentView(R.layout.payment_screen);
 
         addControl();
@@ -173,8 +175,17 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
 
         Order order = new Order();
         order.setPaymentMethod(tv_paymentMethod.getText().toString());
-        order.setNote(edt_noteOrder.getText().toString());
-        order.setUserAddress(tv_address.getText().toString());
+        // 1. Lấy dữ liệu gốc (Plaintext)
+        String rawNote = edt_noteOrder.getText().toString();
+        String rawAddress = tv_address.getText().toString();
+
+        // 2. Mã hóa bằng CryptoManager
+        String encryptedNote = cryptoManager.encrypt(rawNote);
+        String encryptedAddress = cryptoManager.encrypt(rawAddress);
+
+        // 3. Set dữ liệu ĐÃ MÃ HÓA vào object Order để gửi đi
+        order.setNote(encryptedNote);
+        order.setUserAddress(encryptedAddress);
         order.setPoint(Integer.parseInt(tv_awardPoint.getText().toString()));
         order.setTotalCouponDiscount(Convert.convertCurrencyFormat(tv_voucherDiscount.getText().toString()));
         order.setTotalProductDiscount(Convert.convertCurrencyFormat(tv_productDiscount.getText().toString()));

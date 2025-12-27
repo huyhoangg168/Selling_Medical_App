@@ -96,4 +96,5 @@ dependencies {
     implementation ("androidx.browser:browser:1.3.0")
 
     implementation ("com.google.android.gms:play-services-safetynet:18.0.1")
+    implementation ("androidx.security:security-crypto:1.1.0-alpha06")
 }

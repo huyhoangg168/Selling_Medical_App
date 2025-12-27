@@ -22,6 +22,12 @@ import com.example.clientsellingmedicine.R;
 import com.example.clientsellingmedicine.DTO.GoogleToken;
 import com.example.clientsellingmedicine.DTO.UserLogin;
 import com.example.clientsellingmedicine.DTO.Token;
+// Import các class cho Key Exchange
+import com.example.clientsellingmedicine.DTO.ExchangeKeyRequest;
+import com.example.clientsellingmedicine.DTO.ExchangeKeyResponse;
+import com.example.clientsellingmedicine.api.AuthAPI;
+import com.example.clientsellingmedicine.utils.CryptoManager;
+
 import com.example.clientsellingmedicine.activity.MainActivity;
 import com.example.clientsellingmedicine.api.LoginAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
@@ -47,14 +53,13 @@ public class LoginActivity extends AppCompatActivity {
 
     TextInputEditText edt_phone_number, edt_password;
     ImageView iv_back;
-    Button btn_login,btn_google_signin;
+    Button btn_login, btn_google_signin;
     TextView tvRegister;
 
     private SignInClient oneTapClient;
     private BeginSignInRequest signUpRequest;
-    private static final int REQ_ONE_TAP = 2;  // Can be any integer unique to the Activity.
-    private boolean showOneTapUI = true;
-    ActivityResultLauncher<IntentSenderRequest> activityResultLauncher;
+    private ActivityResultLauncher<IntentSenderRequest> activityResultLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,37 +73,25 @@ public class LoginActivity extends AppCompatActivity {
         signUpRequest = BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
-                        // Your server's client ID, not your Android client ID.
                         .setServerClientId(getString(R.string.web_client_id))
-                        // Show all accounts on the device.
                         .setFilterByAuthorizedAccounts(false)
                         .build())
                 .build();
 
-         activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), result -> {
-             try {
-                 SignInCredential credential = oneTapClient.getSignInCredentialFromIntent(result.getData());
-                 String idToken = credential.getGoogleIdToken();
-                 if (idToken !=  null) {
-                     LoginWithGoogle(new GoogleToken(idToken));
-                 } else {
-                     MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(mContext);
-                     builder.setIcon(R.drawable.ic_warning) // Đặt icon của Dialog
-                             .setTitle("Đăng nhập thất bại")
-                             .setMessage("Vui lòng kiểm tra lại tài khoản Google đã đăng nhập !")
-//                            .setCancelable(false) // Bấm ra ngoài không mất dialog
-                             .setPositiveButton("OK", (dialog, which) -> {
-                                 // Xử lý khi nhấn nút OK
-                             })
-                             .show();
-                 }
-             } catch (ApiException e) {
-                 e.printStackTrace();
-             }
-         });
-
+        activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(), result -> {
+            try {
+                SignInCredential credential = oneTapClient.getSignInCredentialFromIntent(result.getData());
+                String idToken = credential.getGoogleIdToken();
+                if (idToken != null) {
+                    LoginWithGoogle(new GoogleToken(idToken));
+                } else {
+                    showErrorDialog("Đăng nhập thất bại", "Vui lòng kiểm tra lại tài khoản Google !");
+                }
+            } catch (ApiException e) {
+                e.printStackTrace();
+            }
+        });
     }
-
 
     private void addControl() {
         edt_phone_number = findViewById(R.id.edt_phone_number);
@@ -108,133 +101,67 @@ public class LoginActivity extends AppCompatActivity {
         tvRegister = findViewById(R.id.tvRegister);
         iv_back = findViewById(R.id.iv_back);
     }
+
     private void addEvents() {
         TextWatcher textWatcher = new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override
             public void afterTextChanged(Editable s) {
-                // Enable the button if both EditTexts have values
-                btn_login.setEnabled(!edt_phone_number.getText().toString().trim().isEmpty() && !edt_password.getText().toString().trim().isEmpty());
+                btn_login.setEnabled(!edt_phone_number.getText().toString().trim().isEmpty() &&
+                        !edt_password.getText().toString().trim().isEmpty());
             }
         };
         edt_phone_number.addTextChangedListener(textWatcher);
         edt_password.addTextChangedListener(textWatcher);
+
         btn_login.setOnClickListener(view -> {
             UserLogin userLogin = new UserLogin(edt_phone_number.getText().toString(), edt_password.getText().toString());
-            //loginServiceImpl.login(userLogin);
             Login(userLogin);
         });
+
         tvRegister.setOnClickListener(view -> {
             Intent i = new Intent(mContext, RegisterActivity.class);
             i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(i);
         });
+
         iv_back.setOnClickListener(view -> finish());
 
         btn_google_signin.setOnClickListener(v -> oneTapClient.beginSignIn(signUpRequest)
                 .addOnSuccessListener(LoginActivity.this, result -> {
-
                     IntentSenderRequest intentSenderRequest =
                             new IntentSenderRequest.Builder(result.getPendingIntent().getIntentSender()).build();
                     activityResultLauncher.launch(intentSenderRequest);
-
                 })
                 .addOnFailureListener(LoginActivity.this, e -> {
-                    // No Google Accounts found. Just continue presenting the signed-out UI.
                     Log.d("TAG", e.getLocalizedMessage());
                 }));
-
     }
 
+    // =========================================================================
+    //  QUY TRÌNH ĐĂNG NHẬP MỚI:
+    //  Login (lấy Token) -> Key Exchange (lấy AES Key) -> Get User (Lấy Role) -> Navigate
+    // =========================================================================
 
     public void Login(UserLogin userLogin) {
         LoginAPI loginAPI = ServiceBuilder.buildService(LoginAPI.class);
         Call<Token> request = loginAPI.login(userLogin);
         request.enqueue(new Callback<Token>() {
-
             @Override
             public void onResponse(Call<Token> call, Response<Token> response) {
                 if (response.isSuccessful()) {
-
-                    //save jwt token on client
+                    // 1. Lưu JWT Token
                     Token token = response.body();
                     SharedPref.saveToken(mContext, Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN, token);
 
-                    // Lưu token như cũ
-                    SharedPref.saveToken(
-                            LoginActivity.this,
-                            Constants.TOKEN_PREFS_NAME,
-                            Constants.KEY_TOKEN,
-                            token
-                    );
-
-                    // GỌI API LẤY USER ĐỂ BIẾT ROLE
-                    UserAPI userAPI = ServiceBuilder.buildService(UserAPI.class);
-                    Call<UserDTO> callUser = userAPI.getUser();
-
-                    callUser.enqueue(new Callback<UserDTO>() {
-                        @Override
-                        public void onResponse(Call<UserDTO> call, Response<UserDTO> response) {
-                            if (response.isSuccessful() && response.body() != null) {
-
-                                UserDTO user = response.body();
-
-                                // (Tuỳ chọn) Lưu user lại
-                                SharedPref.saveUser(
-                                        LoginActivity.this,
-                                        Constants.USER_PREFS_NAME,
-                                        Constants.KEY_USER,
-                                        user
-                                );
-
-                                // ✅ Rẽ nhánh theo role
-                                if ("admin".equalsIgnoreCase(user.getRole())) {
-                                    // ADMIN → chỉ vào dashboard
-                                    startActivity(new Intent(LoginActivity.this, AdminProductActivity.class));
-                                } else {
-                                    // USER → vào app mua hàng như cũ
-                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                }
-
-                                finish(); // đóng màn login
-
-                            } else {
-                                // fallback: nếu có lỗi, vẫn vào MainActivity như cũ
-                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                finish();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<UserDTO> call, Throwable t) {
-                            // fallback nếu lỗi mạng
-                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                            finish();
-                        }
-                    });
-
+                    // 2. Thực hiện Exchange Key bảo mật
+                    performKeyExchangeAndNavigate();
 
                 } else if (response.code() / 100 == 4) {
-                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(mContext);
-                    builder.setIcon(R.drawable.ic_warning) // Đặt icon của Dialog
-                            .setTitle("Sai thông tin đăng nhập")
-                            .setMessage("Vui lòng kiểm tra lại thông tin và đăng nhập lại !")
-//                            .setCancelable(false) // Bấm ra ngoài không mất dialog
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // Xử lý khi nhấn nút OK
-
-                                }
-                            })
-                            .show();
+                    showErrorDialog("Sai thông tin đăng nhập", "Vui lòng kiểm tra lại thông tin !");
                 } else {
                     Toast.makeText(mContext, "Somethings was wrong!", Toast.LENGTH_LONG).show();
                 }
@@ -242,49 +169,128 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<Token> call, Throwable t) {
-                if (t instanceof IOException) {
-                    Toast.makeText(mContext, "A connection error occured", Toast.LENGTH_LONG).show();
-                } else
-                    Toast.makeText(mContext, "Somethings was wrong!", Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "Connection error", Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    private void LoginWithGoogle(GoogleToken googleToken){
+    private void LoginWithGoogle(GoogleToken googleToken) {
         LoginAPI loginAPI = ServiceBuilder.buildService(LoginAPI.class);
         Call<Token> request = loginAPI.loginWithGoogle(googleToken);
-        request.enqueue(new Callback<Token>() { // chạy bất đồng bộ
-
-            //Xử lý khi server thành công
+        request.enqueue(new Callback<Token>() {
             @Override
             public void onResponse(Call<Token> call, Response<Token> response) {
                 if (response.isSuccessful()) {
-
-                    //save jwt token on client
+                    // 1. Lưu JWT Token
                     Token token = response.body();
                     SharedPref.saveToken(mContext, Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN, token);
 
-                    //navigate
-                    Intent intent = new Intent(mContext, MainActivity.class);
-                    finish();
-                    startActivity(intent);
-                }
-               else {
-                    Toast.makeText(mContext, "Đăng nhập thất bại, đã có lỗi xảy ra !", Toast.LENGTH_LONG).show();
+                    // 2. Thực hiện Exchange Key bảo mật (Trước đây Google Login bỏ qua bước check role, giờ ta nên thêm vào)
+                    performKeyExchangeAndNavigate();
+
+                } else {
+                    Toast.makeText(mContext, "Đăng nhập Google thất bại!", Toast.LENGTH_LONG).show();
                 }
             }
 
-            //Xử lý khi server thất bại
             @Override
             public void onFailure(Call<Token> call, Throwable t) {
-                if (t instanceof IOException) {
-                    Toast.makeText(mContext, "A connection error occured", Toast.LENGTH_LONG).show();
-                } else
-                    Toast.makeText(mContext, "Failed to retrieve items", Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "Connection error", Toast.LENGTH_LONG).show();
             }
         });
     }
 
+    // --- HÀM THỰC HIỆN KEY EXCHANGE ---
+    private void performKeyExchangeAndNavigate() {
+        CryptoManager cryptoManager = new CryptoManager(mContext);
+
+        // 1. Tạo RSA Public Key
+        String publicKey = cryptoManager.generateAndGetRSAPublicKey();
+
+        if (publicKey == null) {
+            // Nếu lỗi tạo key, vẫn cho đi tiếp nhưng tính năng bảo mật sẽ không chạy
+            Toast.makeText(mContext, "Warning: Security Key generation failed", Toast.LENGTH_SHORT).show();
+            fetchUserInfoAndNavigate();
+            return;
+        }
+
+        // 2. Gửi Public Key lên Server
+        AuthAPI authAPI = ServiceBuilder.buildService(AuthAPI.class);
+        ExchangeKeyRequest req = new ExchangeKeyRequest();
+        req.publicKey = publicKey;
+
+        authAPI.exchangeKey(req).enqueue(new Callback<ExchangeKeyResponse>() {
+            @Override
+            public void onResponse(Call<ExchangeKeyResponse> call, Response<ExchangeKeyResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // 3. Nhận AES Key (đã mã hóa) từ Server -> Giải mã & Lưu
+                    boolean success = cryptoManager.decryptAndSaveServerKey(response.body().encryptedKey);
+                    if (!success) {
+                        Log.e("Security", "Failed to save AES key");
+                    }
+                } else {
+                    Log.e("Security", "Exchange Key API failed: " + response.code());
+                }
+
+                // Dù thành công hay thất bại Key Exchange, vẫn cho user vào App
+                // (Hoặc bạn có thể chặn lại nếu yêu cầu bảo mật cao)
+                fetchUserInfoAndNavigate();
+            }
+
+            @Override
+            public void onFailure(Call<ExchangeKeyResponse> call, Throwable t) {
+                Log.e("Security", "Exchange Key Network Error");
+                fetchUserInfoAndNavigate();
+            }
+        });
+    }
+
+    // --- HÀM LẤY INFO USER & ĐIỀU HƯỚNG ---
+    private void fetchUserInfoAndNavigate() {
+        UserAPI userAPI = ServiceBuilder.buildService(UserAPI.class);
+        Call<UserDTO> callUser = userAPI.getUser();
+
+        callUser.enqueue(new Callback<UserDTO>() {
+            @Override
+            public void onResponse(Call<UserDTO> call, Response<UserDTO> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserDTO user = response.body();
+
+                    // Lưu info user
+                    SharedPref.saveUser(LoginActivity.this, Constants.USER_PREFS_NAME, Constants.KEY_USER, user);
+
+                    // Điều hướng theo Role
+                    if ("admin".equalsIgnoreCase(user.getRole())) {
+                        startActivity(new Intent(LoginActivity.this, AdminProductActivity.class));
+                    } else {
+                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    }
+                    finish();
+                } else {
+                    // Fallback mặc định
+                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    finish();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserDTO> call, Throwable t) {
+                // Fallback mặc định
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
+            }
+        });
+    }
+
+    // Helper dialog
+    private void showErrorDialog(String title, String message) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(mContext);
+        builder.setIcon(R.drawable.ic_warning)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> {})
+                .show();
+    }
 
     @Override
     public void onBackPressed() {
