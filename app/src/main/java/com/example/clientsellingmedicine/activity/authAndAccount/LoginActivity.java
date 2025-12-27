@@ -41,6 +41,12 @@ import com.google.android.gms.auth.api.identity.SignInCredential;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.gms.safetynet.SafetyNet; // (Có thể cần nếu dùng SafetyNet cũ, nhưng với code này thì dòng dưới quan trọng hơn)
+import com.google.android.gms.recaptcha.Recaptcha;
+import com.google.android.gms.recaptcha.RecaptchaAction;
+import com.google.android.gms.recaptcha.RecaptchaHandle;
+import com.google.android.gms.recaptcha.RecaptchaResultData;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -59,6 +65,7 @@ public class LoginActivity extends AppCompatActivity {
     private SignInClient oneTapClient;
     private BeginSignInRequest signUpRequest;
     private ActivityResultLauncher<IntentSenderRequest> activityResultLauncher;
+    private static final String RECAPTCHA_SITE_KEY = "6LeEYDgsAAAAANgtg14NwAM7LsnbYNdCIg1GMdMH";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,31 +154,112 @@ public class LoginActivity extends AppCompatActivity {
     // =========================================================================
 
     public void Login(UserLogin userLogin) {
+        // Hiển thị loading nếu cần (LoadingManager.showLoading(mContext));
+
         LoginAPI loginAPI = ServiceBuilder.buildService(LoginAPI.class);
         Call<Token> request = loginAPI.login(userLogin);
         request.enqueue(new Callback<Token>() {
             @Override
             public void onResponse(Call<Token> call, Response<Token> response) {
+                // LoadingManager.hideLoading();
+
                 if (response.isSuccessful()) {
-                    // 1. Lưu JWT Token
+                    // --- TRƯỜNG HỢP THÀNH CÔNG (200) ---
                     Token token = response.body();
                     SharedPref.saveToken(mContext, Constants.TOKEN_PREFS_NAME, Constants.KEY_TOKEN, token);
-
-                    // 2. Thực hiện Exchange Key bảo mật
                     performKeyExchangeAndNavigate();
 
-                } else if (response.code() / 100 == 4) {
-                    showErrorDialog("Sai thông tin đăng nhập", "Vui lòng kiểm tra lại thông tin !");
                 } else {
-                    Toast.makeText(mContext, "Somethings was wrong!", Toast.LENGTH_LONG).show();
+                    // --- XỬ LÝ CÁC MÃ LỖI ---
+                    handleLoginErrors(response, userLogin);
                 }
             }
 
             @Override
             public void onFailure(Call<Token> call, Throwable t) {
-                Toast.makeText(mContext, "Connection error", Toast.LENGTH_LONG).show();
+                // LoadingManager.hideLoading();
+                Toast.makeText(mContext, "Lỗi kết nối server!", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void handleLoginErrors(Response<Token> response, UserLogin currentUserLogin) {
+        try {
+            int code = response.code();
+            String errorMessage = "Đã có lỗi xảy ra";
+
+            // Lấy message lỗi từ Server gửi về
+            if (response.errorBody() != null) {
+                JSONObject errorObj = new JSONObject(response.errorBody().string());
+                if(errorObj.has("message")) {
+                    errorMessage = errorObj.getString("message");
+                }
+            }
+
+            switch (code) {
+                case 403:
+                    // [Backend yêu cầu Captcha] -> Gọi hàm hiện Captcha
+                    Toast.makeText(mContext, "Đang xác thực bảo mật...", Toast.LENGTH_SHORT).show();
+                    showCaptchaAndRetry(currentUserLogin);
+                    break;
+
+                case 429:
+                    // [Bị Khóa do Spam hoặc DDoS] -> Hiện Dialog chặn
+                    showErrorDialog("Tạm khóa tài khoản", errorMessage);
+                    // Disable nút login nếu muốn
+                    btn_login.setEnabled(false);
+                    break;
+
+                case 401:
+                    // [Sai mật khẩu hoặc username]
+                    showErrorDialog("Đăng nhập thất bại", errorMessage);
+                    break;
+
+                default:
+                    showErrorDialog("Lỗi", errorMessage);
+                    break;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorDialog("Lỗi", "Không thể xử lý phản hồi từ server");
+        }
+    }
+
+    // --- HÀM XỬ LÝ CAPTCHA ---
+    // --- HÀM XỬ LÝ CAPTCHA ---
+    private void showCaptchaAndRetry(UserLogin userLogin) {
+        // 1. Khởi tạo (Init)
+        Recaptcha.getClient(this).init(RECAPTCHA_SITE_KEY)
+                .addOnSuccessListener(this, handle -> {
+                    Log.d("Captcha", "Init thành công, đang execute...");
+
+                    Recaptcha.getClient(this).execute(handle, new RecaptchaAction("LOGIN"))
+                            .addOnSuccessListener(this, response -> {
+                                // LoadingManager.hideLoading();
+                                Toast.makeText(mContext, "Xác thực thành công, đang đăng nhập lại...", Toast.LENGTH_SHORT).show();
+
+                                String captchaToken = response.getTokenResult();
+                                Log.d("Captcha", "Token nhận được: " + captchaToken);
+
+                                // Gọi lại Login kèm token
+                                UserLogin newLoginRequest = new UserLogin(
+                                        userLogin.getPhone(),
+                                        userLogin.getPassword(),
+                                        captchaToken
+                                );
+                                Login(newLoginRequest);
+                            })
+                            .addOnFailureListener(this, e -> {
+                                // LoadingManager.hideLoading();
+                                Log.e("Captcha", "Execute thất bại", e);
+                                Toast.makeText(mContext, "Lỗi Captcha: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
+                })
+                .addOnFailureListener(this, e -> {
+                    Toast.makeText(mContext, "Khởi tạo Captcha lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("Captcha", "Init Error", e);
+                });
     }
 
     private void LoginWithGoogle(GoogleToken googleToken) {
