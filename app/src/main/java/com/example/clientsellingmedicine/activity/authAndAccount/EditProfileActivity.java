@@ -113,6 +113,7 @@ public class EditProfileActivity extends AppCompatActivity {
         if (user != null) {
             edtUserName.setText(user.getUsername() == null ? "" : user.getUsername());
             edtPhoneNumber.setText(user.getPhone());
+            edtPhoneNumber.setEnabled(false);
             if (user.getGender() == 1) {
                 rdbMale.setChecked(true);
             } else {

@@ -199,6 +199,7 @@ public class RegisterActivity extends AppCompatActivity {
                         intent.putExtra("phoneNumber", phoneNumber);
                         intent.putExtra("password", tvPassword.getText().toString().trim());
                         intent.putExtra("confirmPassword", tvConfirmPassword.getText().toString().trim());
+                        intent.putExtra("resendToken", forceResendingToken);
                         startActivity(intent);
                     }
                 })

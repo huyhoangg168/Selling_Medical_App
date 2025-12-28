@@ -50,7 +50,7 @@ public class ProfileFragment extends Fragment {
 
     private ProgressBar progress_Point;
 
-    private LinearLayout ll_AddressBook,ll_EditProfile;
+    private LinearLayout ll_AddressBook,ll_EditProfile, ll_changePhone;
 
     private SwitchCompat sw_biometric;
 
@@ -83,6 +83,7 @@ public class ProfileFragment extends Fragment {
 
         ll_AddressBook = view.findViewById(R.id.ll_AddressBook);
         ll_EditProfile = view.findViewById(R.id.ll_EditProfile);
+        ll_changePhone = view.findViewById(R.id.ll_changeNumPhone);
         sw_biometric = view.findViewById(R.id.sw_biometric);
     }
     private void addEvents(){
@@ -96,6 +97,10 @@ public class ProfileFragment extends Fragment {
         ll_EditProfile.setOnClickListener(v -> {
             Intent intent = new Intent(mContext, IndividualActivity.class);
             startActivity(intent);
+        });
+
+        ll_changePhone.setOnClickListener(v -> {
+            startActivity(new Intent(mContext, ChangePhoneActivity.class));
         });
 
         // logout button

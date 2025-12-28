@@ -230,7 +230,9 @@
                     android:hint="Nhập số điện thoại"
                     android:textColor="@color/black"
                     android:background="@android:color/transparent"
-                    android:padding="18dp" />
+                    android:padding="18dp"
+                    android:focusable="false"
+                    android:alpha="0.6"/>
             </LinearLayout>
 <!--            Ngày sinh -->
             <LinearLayout
