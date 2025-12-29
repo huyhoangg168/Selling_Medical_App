@@ -21,6 +21,7 @@ import com.example.clientsellingmedicine.activity.authAndAccount.LoginActivity;
 import com.example.clientsellingmedicine.api.OrderAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.utils.Convert;
+import com.example.clientsellingmedicine.utils.CryptoManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,10 +40,13 @@ public class OrderDetailActivity extends AppCompatActivity {
 
     private orderDetailAdapter orderDetailAdapter;
 
+    private CryptoManager cryptoManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+        cryptoManager = new CryptoManager(this);
         setContentView(R.layout.order_detail);
 
         addControl();
@@ -87,7 +91,7 @@ public class OrderDetailActivity extends AppCompatActivity {
         if (order != null) {
             displayUserInfor(order.getUser());
             getOrderItems(order.getId()); // get order items and total price
-            tv_Address.setText(order.getUserAddress());
+            tv_Address.setText(cryptoManager.decrypt(order.getUserAddress()));
             String orderTime = Convert.convertToDate(order.getOrderTime().toString());
             tv_orderTime.setText(orderTime);
             tv_orderCode.setText(order.getCode());
@@ -102,15 +106,17 @@ public class OrderDetailActivity extends AppCompatActivity {
     }
 
     public void displayUserInfor(UserDTO user) {
+        String decryptedPhone = cryptoManager.decrypt(user.getPhone());
+
         if (user.getUsername() != null) {
             tv_userName.setText(user.getUsername());
         } else if (user.getPhone() != null) {
-            tv_userName.setText(user.getPhone());
+            tv_userName.setText(decryptedPhone);
         } else {
             tv_userName.setText(user.getEmail());
         }
 
-        tv_Phone.setText(user.getPhone());
+        tv_Phone.setText(decryptedPhone);
     }
 
 

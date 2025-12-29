@@ -70,6 +70,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("com.google.android.gms:play-services-recaptcha:17.1.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -104,9 +105,13 @@ dependencies {
     implementation ("androidx.browser:browser:1.3.0")
 
     implementation ("com.google.android.gms:play-services-safetynet:18.0.1")
-    //Mã hóa
+    
+    // Mã hóa và bảo mật
     implementation ("androidx.security:security-crypto:1.1.0-alpha06")
-    //Vân tay
+    
+    // Vân tay và sinh trắc học
     implementation("androidx.biometric:biometric:1.1.0")
-
+    
+    // Recaptcha (đã có ở trên nhưng version mới hơn ở đây)
+    // implementation("com.google.android.gms:play-services-recaptcha:17.1.0") // Đã khai báo ở trên
 }

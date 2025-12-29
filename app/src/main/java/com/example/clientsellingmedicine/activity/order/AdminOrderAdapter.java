@@ -17,6 +17,8 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import com.example.clientsellingmedicine.utils.CryptoManager;
+
 public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.OrderViewHolder> {
 
     public interface OnActionListener {
@@ -58,13 +60,24 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
 
     class OrderViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvCode, tvCustomerName, tvOrderDate, tvProducts, tvTotal, tvStatusChip;
+        TextView tvCode, tvCustomerName, tvPhone, tvAddress, tvNote;
+        TextView tvOrderDate, tvProducts, tvTotal, tvStatusChip;
         TextView btnReject, btnApprove;
+
+        private CryptoManager cryptoManager;
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
+            // 2. Khởi tạo CryptoManager
+            cryptoManager = new CryptoManager(itemView.getContext());
+
+            // 3. Ánh xạ View
             tvCode = itemView.findViewById(R.id.tvCode);
             tvCustomerName = itemView.findViewById(R.id.tvCustomerName);
+            tvPhone = itemView.findViewById(R.id.tvPhone);
+            tvAddress = itemView.findViewById(R.id.tvAddress);
+            tvNote = itemView.findViewById(R.id.tvNote);
+
             tvOrderDate = itemView.findViewById(R.id.tvOrderDate);
             tvProducts = itemView.findViewById(R.id.tvProducts);
             tvTotal = itemView.findViewById(R.id.tvTotal);
@@ -76,22 +89,46 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
         public void bind(OrderDTO order) {
             tvCode.setText("#" + order.getCode());
 
-            // ======= TÊN KHÁCH HÀNG =======
+            // ======= TÊN KHÁCH HÀNG & SĐT =======
             String name = "Khách";
+            String phone = "Không có SĐT"; // Mặc định
 
             if (order.getUser() != null) {
                 UserDTO u = order.getUser();
 
+                // 1. Xử lý Tên
                 if (u.getUsername() != null && !u.getUsername().trim().isEmpty()) {
                     name = u.getUsername().trim();
-                } else if (u.getPhone() != null && !u.getPhone().trim().isEmpty()) {
-                    name = u.getPhone().trim();
-                } else if (u.getEmail() != null && !u.getEmail().trim().isEmpty()) {
+                }
+                else if (u.getEmail() != null && !u.getEmail().trim().isEmpty()) {
                     name = u.getEmail().trim();
                 }
+
+                // 2. Xử lý SĐT (THÊM ĐOẠN NÀY)
+                if (u.getPhone() != null && !u.getPhone().trim().isEmpty()) {
+                    // Dùng decrypt để đảm bảo nếu Backend quên giải mã thì App tự giải mã
+                    phone = cryptoManager.decrypt(u.getPhone().trim());
+                }
+
+                // 3. XỬ LÝ GHI CHÚ (Thêm đoạn này)
+                String note = "Không có ghi chú";
+                if (order.getNote() != null && !order.getNote().isEmpty()) {
+                    // Giải mã ghi chú (Backend gửi về dạng AES_ENCRYPTED hoặc plaintext)
+                    note = cryptoManager.decrypt(order.getNote());
+                }
+                tvNote.setText("Ghi chú: " + note);
             }
 
             tvCustomerName.setText("Tên khách hàng: " + name);
+            tvPhone.setText("SĐT: " + phone); // <--- QUAN TRỌNG: Phải set text ở đây
+
+            // ======= ĐỊA CHỈ (THÊM ĐOẠN NÀY) =======
+            String address = "Không có địa chỉ";
+            if (order.getUserAddress() != null && !order.getUserAddress().isEmpty()) {
+                // Dùng decrypt để hiển thị địa chỉ rõ
+                address = cryptoManager.decrypt(order.getUserAddress());
+            }
+            tvAddress.setText("Địa chỉ: " + address);
 
 
             // Ngày đặt
