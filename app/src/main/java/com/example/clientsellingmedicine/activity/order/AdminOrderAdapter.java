@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -64,6 +65,9 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
         TextView tvOrderDate, tvProducts, tvTotal, tvStatusChip;
         TextView btnReject, btnApprove;
 
+        TextView tvIntegrityWarning;
+        LinearLayout layoutSensitiveInfo;
+
         private CryptoManager cryptoManager;
 
         public OrderViewHolder(@NonNull View itemView) {
@@ -73,6 +77,8 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
 
             // 3. Ánh xạ View
             tvCode = itemView.findViewById(R.id.tvCode);
+            tvIntegrityWarning = itemView.findViewById(R.id.tvIntegrityWarning);
+            layoutSensitiveInfo = itemView.findViewById(R.id.layoutSensitiveInfo);
             tvCustomerName = itemView.findViewById(R.id.tvCustomerName);
             tvPhone = itemView.findViewById(R.id.tvPhone);
             tvAddress = itemView.findViewById(R.id.tvAddress);
@@ -89,46 +95,45 @@ public class AdminOrderAdapter extends RecyclerView.Adapter<AdminOrderAdapter.Or
         public void bind(OrderDTO order) {
             tvCode.setText("#" + order.getCode());
 
-            // ======= TÊN KHÁCH HÀNG & SĐT =======
-            String name = "Khách";
-            String phone = "Không có SĐT"; // Mặc định
+            // 1. Lấy dữ liệu thô để kiểm tra cờ cảnh báo
+            String rawPhone = (order.getUser() != null) ? order.getUser().getPhone() : "";
+            String rawAddress = order.getUserAddress();
+            String rawNote = order.getNote();
 
-            if (order.getUser() != null) {
-                UserDTO u = order.getUser();
+            // Kiểm tra từ khóa cảnh báo (Backend gửi về "⚠️ TAMPERED" hoặc "⚠️")
+            boolean isTampered = (rawPhone != null && rawPhone.contains("⚠️")) ||
+                    (rawAddress != null && rawAddress.contains("⚠️")) ||
+                    (rawNote != null && rawNote.contains("⚠️"));
 
-                // 1. Xử lý Tên
-                if (u.getUsername() != null && !u.getUsername().trim().isEmpty()) {
-                    name = u.getUsername().trim();
+            if (isTampered) {
+                // TRƯỜNG HỢP BỊ CAN THIỆP: Hiện cảnh báo, Ẩn thông tin
+                tvIntegrityWarning.setVisibility(View.VISIBLE);
+                layoutSensitiveInfo.setVisibility(View.GONE);
+            } else {
+                // TRƯỜNG HỢP AN TOÀN: Ẩn cảnh báo, Hiện thông tin & Set dữ liệu bình thường
+                tvIntegrityWarning.setVisibility(View.GONE);
+                layoutSensitiveInfo.setVisibility(View.VISIBLE);
+                String name = "Khách";
+                if (order.getUser() != null && order.getUser().getUsername() != null) {
+                    name = order.getUser().getUsername();
                 }
-                else if (u.getEmail() != null && !u.getEmail().trim().isEmpty()) {
-                    name = u.getEmail().trim();
-                }
+                tvCustomerName.setText("Tên khách hàng: " + name);
 
-                // 2. Xử lý SĐT (THÊM ĐOẠN NÀY)
-                if (u.getPhone() != null && !u.getPhone().trim().isEmpty()) {
-                    // Dùng decrypt để đảm bảo nếu Backend quên giải mã thì App tự giải mã
-                    phone = cryptoManager.decrypt(u.getPhone().trim());
-                }
+                // Xử lý SĐT (Decrypt nếu cần)
+                String phone = (rawPhone != null) ? rawPhone : "N/A";
+                if(phone.startsWith("AES_ENCRYPTED:")) phone = cryptoManager.decrypt(phone);
+                tvPhone.setText("SĐT: " + phone);
 
-                // 3. XỬ LÝ GHI CHÚ (Thêm đoạn này)
-                String note = "Không có ghi chú";
-                if (order.getNote() != null && !order.getNote().isEmpty()) {
-                    // Giải mã ghi chú (Backend gửi về dạng AES_ENCRYPTED hoặc plaintext)
-                    note = cryptoManager.decrypt(order.getNote());
-                }
+                // Xử lý Địa chỉ
+                String address = (rawAddress != null) ? rawAddress : "N/A";
+                if(address.startsWith("AES_ENCRYPTED:")) address = cryptoManager.decrypt(address);
+                tvAddress.setText("Địa chỉ: " + address);
+
+                // Xử lý Note
+                String note = (rawNote != null) ? rawNote : "";
+                if(note.startsWith("AES_ENCRYPTED:")) note = cryptoManager.decrypt(note);
                 tvNote.setText("Ghi chú: " + note);
             }
-
-            tvCustomerName.setText("Tên khách hàng: " + name);
-            tvPhone.setText("SĐT: " + phone); // <--- QUAN TRỌNG: Phải set text ở đây
-
-            // ======= ĐỊA CHỈ (THÊM ĐOẠN NÀY) =======
-            String address = "Không có địa chỉ";
-            if (order.getUserAddress() != null && !order.getUserAddress().isEmpty()) {
-                // Dùng decrypt để hiển thị địa chỉ rõ
-                address = cryptoManager.decrypt(order.getUserAddress());
-            }
-            tvAddress.setText("Địa chỉ: " + address);
 
 
             // Ngày đặt
