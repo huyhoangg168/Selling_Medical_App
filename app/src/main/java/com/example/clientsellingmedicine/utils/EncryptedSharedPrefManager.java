@@ -2,6 +2,9 @@ package com.example.clientsellingmedicine.utils;
 
 import static com.example.clientsellingmedicine.utils.Constants.KEY_TOKEN;
 import static com.example.clientsellingmedicine.utils.Constants.KEY_USER;
+import static com.example.clientsellingmedicine.utils.Constants.KEY_FIREBASE_TOKEN;
+import static com.example.clientsellingmedicine.utils.Constants.KEY_CART_ITEMS_CHECKED;
+import static com.example.clientsellingmedicine.utils.Constants.KEY_NOTIFICATE;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -98,6 +101,95 @@ public class EncryptedSharedPrefManager {
             prefs.edit().clear().apply();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /* ================= FIREBASE TOKEN ================= */
+
+    public static void saveFirebaseToken(Context context, Token token) {
+        try {
+            String json = new Gson().toJson(token);
+            getEncryptedPrefs(context)
+                    .edit()
+                    .putString(KEY_FIREBASE_TOKEN, json)
+                    .apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Token loadFirebaseToken(Context context) {
+        try {
+            SharedPreferences prefs = getEncryptedPrefs(context);
+            String json = prefs.getString(KEY_FIREBASE_TOKEN, null);
+            if (json == null) return null;
+            return new Gson().fromJson(json, Token.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /* ================= CART ITEMS ================= */
+
+    public static <T> void saveCartItems(Context context, List<T> cartItems) {
+        try {
+            String json = new Gson().toJson(cartItems);
+            getEncryptedPrefs(context)
+                    .edit()
+                    .putString(KEY_CART_ITEMS_CHECKED, json)
+                    .apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static <T> List<T> loadCartItems(Context context, Type type) {
+        try {
+            SharedPreferences prefs = getEncryptedPrefs(context);
+            String json = prefs.getString(KEY_CART_ITEMS_CHECKED, null);
+            if (json == null) return new ArrayList<>();
+            return new Gson().fromJson(json, type);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public static void clearCartItems(Context context) {
+        try {
+            getEncryptedPrefs(context)
+                    .edit()
+                    .remove(KEY_CART_ITEMS_CHECKED)
+                    .apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /* ================= NOTIFICATIONS ================= */
+
+    public static <T> void saveNotifications(Context context, List<T> notifications) {
+        try {
+            String json = new Gson().toJson(notifications);
+            getEncryptedPrefs(context)
+                    .edit()
+                    .putString(KEY_NOTIFICATE, json)
+                    .apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static <T> List<T> loadNotifications(Context context, Type type) {
+        try {
+            SharedPreferences prefs = getEncryptedPrefs(context);
+            String json = prefs.getString(KEY_NOTIFICATE, null);
+            if (json == null) return new ArrayList<>();
+            return new Gson().fromJson(json, type);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 }
