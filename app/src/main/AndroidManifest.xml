@@ -131,6 +131,10 @@
             android:exported="false">
         </activity>
         <activity
+            android:name=".activity.productAndPayment.PaymentOtpActivity"
+            android:exported="false">
+        </activity>
+        <activity
             android:name=".activity.productAndPayment.MomoPaymentResultActivity"
             android:exported="true"
             android:launchMode="singleTask">
