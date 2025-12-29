@@ -44,6 +44,7 @@ import com.example.clientsellingmedicine.api.ProductAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.utils.Constants;
 import com.example.clientsellingmedicine.utils.Convert;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.reflect.TypeToken;
@@ -540,7 +541,7 @@ public class ProductActivity extends AppCompatActivity implements IOnProductItem
                             // update CartItems Checked to SharedPreferences
                             CartItemDTO cart = new CartItemDTO(product, quantity.get());
                             listCartItemsChecked.add(cart);
-                            SharedPref.saveData(this, listCartItemsChecked, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED);
+                            EncryptedSharedPrefManager.saveCartItems(this, listCartItemsChecked);
 
                             Toast.makeText(mContext, "Sản phẩm đã được thêm vào giỏ hàng", Toast.LENGTH_LONG).show();
                         }
@@ -748,7 +749,7 @@ public class ProductActivity extends AppCompatActivity implements IOnProductItem
 
     private List<CartItemDTO> getCartItemCheckedFromSharePrefs() {
         Type cartItemType = new TypeToken<List<CartItemDTO>>() {}.getType();
-        List<CartItemDTO> listCartItemChecked = SharedPref.loadData(mContext, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED, cartItemType);
+        List<CartItemDTO> listCartItemChecked = EncryptedSharedPrefManager.loadCartItems(mContext, cartItemType);
         return listCartItemChecked;
     }
 }

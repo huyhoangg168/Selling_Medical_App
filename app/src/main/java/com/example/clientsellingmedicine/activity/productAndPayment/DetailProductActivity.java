@@ -28,8 +28,7 @@ import com.example.clientsellingmedicine.models.CartItem;
 import com.example.clientsellingmedicine.api.CartAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.utils.Constants;
-import com.example.clientsellingmedicine.utils.Convert;
-import com.example.clientsellingmedicine.utils.SharedPref;
+import com.example.clientsellingmedicine.utils.Convert;import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
@@ -261,16 +260,16 @@ public class DetailProductActivity extends AppCompatActivity {
             addToCart(cartItem)
                     .thenAccept(result -> {
                         if (result == 201) {
-                            //get CartItems Checked from SharedPreferences
+                            //get CartItems Checked from Encrypted SharedPreferences
                             Type cartItemType = new TypeToken<List<CartItemDTO>>() {}.getType();
-                            List<CartItemDTO> listCartItemsChecked = SharedPref.loadData(this, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED, cartItemType);
+                            List<CartItemDTO> listCartItemsChecked = EncryptedSharedPrefManager.loadCartItems(this, cartItemType);
                             if(listCartItemsChecked == null){
                                 listCartItemsChecked = new ArrayList<>();
                             }
                             CartItemDTO cart = new CartItemDTO(product,quantity.get());
                             listCartItemsChecked.add(cart);
                             // update CartItems Checked to SharedPreferences
-                            SharedPref.saveData(this, listCartItemsChecked, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED);
+                            EncryptedSharedPrefManager.saveCartItems(this, listCartItemsChecked);
                             Toast.makeText(mContext, "Add item to cart successfully", Toast.LENGTH_LONG).show();
                         }
                         else if(result == 401){

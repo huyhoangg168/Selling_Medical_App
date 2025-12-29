@@ -45,6 +45,7 @@ import com.example.clientsellingmedicine.api.OrderAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.utils.Constants;
 import com.example.clientsellingmedicine.utils.Convert;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
@@ -253,7 +254,7 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
                     }
 
                     // clear cart items in Shared Preferences
-                    SharedPref.clearData(mContext, Constants.CART_PREFS_NAME);
+                    EncryptedSharedPrefManager.clearCartItems(mContext);
                 }else if (response.code() == 409) {
                     handleOutOfStock409(response);
                 } else if (response.code() == 401) {
@@ -296,8 +297,8 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
 
                     }
 
-                    // clear cart items in Shared Preferences
-                    SharedPref.clearData(mContext, Constants.CART_PREFS_NAME);
+                    // clear cart items in Encrypted Shared Preferences
+                    EncryptedSharedPrefManager.clearCartItems(mContext);
                 } else if (response.code() == 401) {
                     Intent intent = new Intent(mContext, LoginActivity.class);
                     finish();
@@ -336,8 +337,8 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
                     finish();
                     startActivity(intent);
 
-                    // clear cart items in Shared Preferences
-                    SharedPref.clearData(mContext, Constants.CART_PREFS_NAME);
+                    // clear cart items in Encrypted Shared Preferences
+                    EncryptedSharedPrefManager.clearCartItems(mContext);
                 }else if (response.code() == 409) {
                     handleOutOfStock409(response);
                 } else if (response.code() == 401) {

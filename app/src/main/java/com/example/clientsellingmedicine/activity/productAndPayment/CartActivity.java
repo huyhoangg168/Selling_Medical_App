@@ -39,6 +39,7 @@ import com.example.clientsellingmedicine.api.CouponAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.utils.Constants;
 import com.example.clientsellingmedicine.utils.Convert;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
@@ -188,7 +189,7 @@ public class CartActivity extends AppCompatActivity implements IOnCartItemListen
                         // Xử lý khi nhấn nút OK
                         // get list cart items checked
                         Type cartItemType = new TypeToken<List<CartItemDTO>>() {}.getType();
-                        List<CartItemDTO> listCartItemsChecked = SharedPref.loadData(CartActivity.this, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED, cartItemType);
+                        List<CartItemDTO> listCartItemsChecked = EncryptedSharedPrefManager.loadCartItems(CartActivity.this, cartItemType);
                         if(listCartItemsChecked != null){
                             // delete cart item
                             for (CartItemDTO item: listCartItemsChecked) {
@@ -559,7 +560,7 @@ public class CartActivity extends AppCompatActivity implements IOnCartItemListen
     }
     private List<CartItemDTO> getCartItemCheckedFromSharePrefs() {
         Type cartItemType = new TypeToken<List<CartItemDTO>>() {}.getType();
-        List<CartItemDTO> listCartItemChecked = SharedPref.loadData(mContext, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED, cartItemType);
+        List<CartItemDTO> listCartItemChecked = EncryptedSharedPrefManager.loadCartItems(mContext, cartItemType);
         return listCartItemChecked;
     }
 

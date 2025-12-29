@@ -4,7 +4,7 @@ import com.example.clientsellingmedicine.Helper.NotificationHelper;
 import com.example.clientsellingmedicine.api.NotificationAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.utils.Constants;
-import com.example.clientsellingmedicine.utils.SharedPref;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -53,10 +53,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService{
         saveFirebaseDeviceToken(token);
     }
 
-    // save to Shared Preferences
+    // save to Encrypted Shared Preferences
     private void saveFirebaseDeviceToken(String token) {
         Token saveToken = new Token(token);
-        SharedPref.saveToken(this, Constants.FIREBASE_TOKEN_PREFS_NAME, Constants.KEY_FIREBASE_TOKEN, saveToken);
+        EncryptedSharedPrefManager.saveFirebaseToken(this, saveToken);
 
         //save to DB
         saveFirebaseDeviceToken(saveToken); //sometime it failed because user not login

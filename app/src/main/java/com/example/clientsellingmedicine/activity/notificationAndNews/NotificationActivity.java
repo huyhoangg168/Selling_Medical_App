@@ -24,6 +24,7 @@ import com.example.clientsellingmedicine.DTO.Notification;
 import com.example.clientsellingmedicine.api.NotificationAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.utils.Constants;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.gson.reflect.TypeToken;
 
@@ -138,14 +139,14 @@ public class NotificationActivity extends AppCompatActivity implements IOnNotifi
         boolean exists = listNotificationsHaveSeen.stream().anyMatch(item -> item.getId() == notification.getId());
         if (!exists) {
             listNotificationsHaveSeen.add(notification);
-            SharedPref.saveData(mContext, listNotificationsHaveSeen, Constants.NOTIFICATE_PREFS_NAME, Constants.KEY_NOTIFICATE);
+            EncryptedSharedPrefManager.saveNotifications(mContext, listNotificationsHaveSeen);
         }
     }
 
     private void seenAllNotification() {
-        //save all notification to SharedPreferences => all notification is seen
+        //save all notification to Encrypted SharedPreferences => all notification is seen
         if (notificationList != null && notificationList.size() > 0) {
-            SharedPref.saveData(mContext, notificationList, Constants.NOTIFICATE_PREFS_NAME, Constants.KEY_NOTIFICATE);
+            EncryptedSharedPrefManager.saveNotifications(mContext, notificationList);
             mAdapter.setmNotificationsHaveSeen(notificationList);
             mAdapter.notifyDataSetChanged();
         }
@@ -159,7 +160,7 @@ public class NotificationActivity extends AppCompatActivity implements IOnNotifi
     private List<Notification> getNotificationsFromSharePrefs() {
         Type notificatetionType = new TypeToken<List<Notification>>() {
         }.getType();
-        List<Notification> listNotificationsHaveSeen = SharedPref.loadData(mContext, Constants.NOTIFICATE_PREFS_NAME, Constants.KEY_NOTIFICATE, notificatetionType);
+        List<Notification> listNotificationsHaveSeen = EncryptedSharedPrefManager.loadNotifications(mContext, notificatetionType);
         return listNotificationsHaveSeen;
     }
 

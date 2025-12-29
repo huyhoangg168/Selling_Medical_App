@@ -23,8 +23,7 @@ import com.example.clientsellingmedicine.DTO.CartItemDTO;
 import com.example.clientsellingmedicine.DTO.Total;
 import com.example.clientsellingmedicine.models.CartItem;
 import com.example.clientsellingmedicine.utils.Constants;
-import com.example.clientsellingmedicine.utils.Convert;
-import com.example.clientsellingmedicine.utils.SharedPref;
+import com.example.clientsellingmedicine.utils.Convert;import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -132,8 +131,8 @@ public class cartAdapter extends RecyclerView.Adapter<cartAdapter.ViewHolder> {
                 }
             }
 
-            // Save CartItems Checked to SharedPreferences
-            SharedPref.saveData(holder.itemView.getContext(), listCartItemsChecked, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED);
+            // Save CartItems Checked to Encrypted SharedPreferences
+            EncryptedSharedPrefManager.saveCartItems(holder.itemView.getContext(), listCartItemsChecked);
 
             updateUIAfterMasterCheckboxChanged();
         });
@@ -194,8 +193,8 @@ public class cartAdapter extends RecyclerView.Adapter<cartAdapter.ViewHolder> {
             this.listCartItemsChecked.addAll(listCartItems);
         }
 
-        // Save the updated list of checked items to SharedPreferences
-        SharedPref.saveData(mContext, listCartItemsChecked, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED);
+        // Save the updated list of checked items to Encrypted SharedPreferences
+        EncryptedSharedPrefManager.saveCartItems(mContext, listCartItemsChecked);
 
         // Notify the adapter that the dataset has changed
         notifyDataSetChanged();
@@ -206,8 +205,8 @@ public class cartAdapter extends RecyclerView.Adapter<cartAdapter.ViewHolder> {
         listCartItems.remove(cartItem);
         // Remove item from CartItems Checked
         listCartItemsChecked.remove(cartItem);
-        // Save CartItems Checked to SharedPreferences
-        SharedPref.saveData(mContext, listCartItemsChecked, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED);
+        // Save CartItems Checked to Encrypted SharedPreferences
+        EncryptedSharedPrefManager.saveCartItems(mContext, listCartItemsChecked);
 
         updateUIAfterMasterCheckboxChanged();
 
@@ -245,7 +244,7 @@ public class cartAdapter extends RecyclerView.Adapter<cartAdapter.ViewHolder> {
         for (CartItemDTO itemChecked : listCartItemsChecked) {
             if (itemChecked.getProduct().equals(item.getProduct())) {
                 itemChecked.setQuantity(newQuantity);
-                SharedPref.saveData(context, listCartItemsChecked, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED);
+                EncryptedSharedPrefManager.saveCartItems(context, listCartItemsChecked);
                 break;
             }
         }

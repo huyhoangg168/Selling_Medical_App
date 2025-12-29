@@ -79,6 +79,7 @@ import com.example.clientsellingmedicine.api.ProductAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.utils.Constants;
 import com.example.clientsellingmedicine.utils.Convert;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.reflect.TypeToken;
@@ -403,7 +404,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
     private List<Notification> getNotificationsFromSharePrefs() {
         Type notificatetionType = new TypeToken<List<Notification>>() {
         }.getType();
-        List<Notification> listNotificationsHaveSeen = SharedPref.loadData(mContext, Constants.NOTIFICATE_PREFS_NAME, Constants.KEY_NOTIFICATE, notificatetionType);
+        List<Notification> listNotificationsHaveSeen = EncryptedSharedPrefManager.loadNotifications(mContext, notificatetionType);
         if (listNotificationsHaveSeen != null && listNotificationsHaveSeen.size() > 0)
             return listNotificationsHaveSeen;
         return new ArrayList<>();
@@ -438,7 +439,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
 
     //Lưu token của device để firebase gửi thông báo
     private void saveFirebaseDeviceToken(){
-        Token deviceToken = SharedPref.loadToken(mContext,Constants.FIREBASE_TOKEN_PREFS_NAME, Constants.KEY_FIREBASE_TOKEN);
+        Token deviceToken = EncryptedSharedPrefManager.loadFirebaseToken(mContext);
 
         NotificationAPI notificationAPI = ServiceBuilder.buildService(NotificationAPI.class);
         Call<Void> request = notificationAPI.saveDevice(deviceToken);
@@ -670,7 +671,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
                             // update CartItems Checked to SharedPreferences
                             CartItemDTO cart = new CartItemDTO(product, quantity.get()); //cartItem save to SharedPreferences
                             listCartItemsChecked.add(cart);
-                            SharedPref.saveData(getContext(), listCartItemsChecked, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED);
+                            EncryptedSharedPrefManager.saveCartItems(getContext(), listCartItemsChecked);
 
                             Toast.makeText(mContext, "Sản phẩm đã được thêm vào giỏ hàng", Toast.LENGTH_SHORT).show();
                         }
@@ -724,7 +725,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
 
     private List<CartItemDTO> getCartItemCheckedFromSharePrefs() {
         Type cartItemType = new TypeToken<List<CartItemDTO>>() {}.getType();
-        List<CartItemDTO> listCartItemChecked = SharedPref.loadData(mContext, Constants.CART_PREFS_NAME, Constants.KEY_CART_ITEMS_CHECKED, cartItemType);
+        List<CartItemDTO> listCartItemChecked = EncryptedSharedPrefManager.loadCartItems(mContext, cartItemType);
         return listCartItemChecked;
     }
 

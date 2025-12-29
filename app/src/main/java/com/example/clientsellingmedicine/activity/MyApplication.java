@@ -9,6 +9,7 @@ import android.os.Build;
 import com.cloudinary.android.MediaManager;
 import com.example.clientsellingmedicine.DTO.Token;
 import com.example.clientsellingmedicine.utils.Constants;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -73,10 +74,10 @@ public class MyApplication extends Application {
                 });
     }
 
-    // save to Shared Preferences
+    // save to Encrypted Shared Preferences
     private void saveFirebaseDeviceToken(String token) {
         Token saveToken = new Token(token);
-        SharedPref.saveToken(this, Constants.FIREBASE_TOKEN_PREFS_NAME, Constants.KEY_FIREBASE_TOKEN, saveToken);
+        EncryptedSharedPrefManager.saveFirebaseToken(this, saveToken);
     }
 
 }
