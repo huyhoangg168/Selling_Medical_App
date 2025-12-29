@@ -376,8 +376,8 @@ public class LoginActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     UserDTO user = response.body();
 
-                    // Lưu info user
-                    SharedPref.saveUser(LoginActivity.this, Constants.USER_PREFS_NAME, Constants.KEY_USER, user);
+                    // Lưu info user vào EncryptedSharedPreferences
+                    EncryptedSharedPrefManager.saveUser(LoginActivity.this, user);
 
                     // Điều hướng theo Role
                     if ("admin".equalsIgnoreCase(user.getRole())) {

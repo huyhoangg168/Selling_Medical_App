@@ -55,7 +55,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private void handleNewToken(String token) {
         // 1. Lưu vào Encrypted Shared Preferences
         if (token != null && !token.isEmpty()) {
-            Token saveToken = new Token(token);
+            Token saveToken = new Token(token, null); // refreshToken is null for device token
             EncryptedSharedPrefManager.saveFirebaseToken(this, saveToken);
 
             // 2. Gửi lên Server (nếu Backend yêu cầu gửi dạng Object Token)

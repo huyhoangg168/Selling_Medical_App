@@ -77,7 +77,7 @@ public class MyApplication extends Application {
     // save to Encrypted Shared Preferences
     private void saveFirebaseDeviceToken(String token) {
         if (token != null && !token.isEmpty()) {
-            Token saveToken = new Token(token);
+            Token saveToken = new Token(token, null); // refreshToken is null for device token
             EncryptedSharedPrefManager.saveFirebaseToken(this, saveToken);
             Log.d("FCM", "Firebase token saved to encrypted storage");
         } else {

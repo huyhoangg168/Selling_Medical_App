@@ -467,7 +467,7 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
         } else {
             Log.d("FCM", "Firebase device token not found or empty");
         }
-    }   }
+    }
 
     private void getFeeds(){
         new FetchFeedTask().execute((Void) null);
