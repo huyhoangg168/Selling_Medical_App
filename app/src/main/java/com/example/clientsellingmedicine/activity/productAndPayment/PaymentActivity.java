@@ -21,6 +21,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricPrompt;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -29,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.clientsellingmedicine.Adapter.confirmOrderAdapter;
 
 import com.example.clientsellingmedicine.Adapter.couponCheckboxAdapter;
+import com.example.clientsellingmedicine.DTO.UserDTO;
 import com.example.clientsellingmedicine.DTO.ZalopayResponse;
 import com.example.clientsellingmedicine.R;
 import com.example.clientsellingmedicine.activity.adress.RegisteredAddressActivity;
@@ -47,10 +50,16 @@ import com.example.clientsellingmedicine.api.ServiceBuilder;
 import com.example.clientsellingmedicine.utils.BiometricHelper;
 import com.example.clientsellingmedicine.utils.Constants;
 import com.example.clientsellingmedicine.utils.Convert;
+import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
 import com.example.clientsellingmedicine.utils.SharedPref;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.FirebaseException;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.PhoneAuthCredential;
+import com.google.firebase.auth.PhoneAuthOptions;
+import com.google.firebase.auth.PhoneAuthProvider;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,7 +68,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
+import lombok.NonNull;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -93,11 +104,35 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
 
     private couponCheckboxAdapter couponCheckboxAdapter;
 
+    // --- BIẾN MỚI CHO LOGIC OTP ---
+    private FirebaseAuth mAuth;
+    private ActivityResultLauncher<Intent> otpActivityLauncher;
+    private OrderWithDetails pendingOrder; // Lưu tạm đơn hàng để chờ xác thực
+    private Dialog loadingDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
         setContentView(R.layout.payment_screen);
+
+        // Khởi tạo Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+
+        // Đăng ký nhận kết quả từ màn hình nhập OTP (PaymentOtpActivity)
+        otpActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        // OTP thành công -> Tiến hành gọi API đặt hàng
+                        if (pendingOrder != null) {
+                            submitOrderToBackend(pendingOrder);
+                        }
+                    } else {
+                        Toast.makeText(mContext, "Đã hủy xác thực hoặc xác thực thất bại.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
 
         addControl();
         addEvents();
@@ -195,28 +230,104 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
         orderWithDetails.setOrder(order);
         orderWithDetails.setListCartItem(products);
 
-        // 3. LOGIC MỚI: KIỂM TRA VÂN TAY
+        // Lưu tạm order để dùng sau khi xác thực xong
+        this.pendingOrder = orderWithDetails;
+
+        // 3. CHECK LOGIC: BIOMETRIC HAY OTP?
+        // Lấy cờ từ SharedPref
         boolean isBiometricEnabled = SharedPref.getBoolean(mContext, Constants.BIOMETRIC_PREFS_NAME, Constants.KEY_BIOMETRIC_ENABLED, false);
 
         if (isBiometricEnabled) {
-            // Nếu ĐANG BẬT vân tay -> Hiện bảng xác thực
+            // CASE 1: ĐANG BẬT VÂN TAY -> Dùng thư viện Biometric
             BiometricHelper.authenticate(this, new BiometricHelper.BiometricCallback() {
                 @Override
                 public void onSuccess(BiometricPrompt.AuthenticationResult result) {
-                    // Vân tay đúng -> Mới gọi API thanh toán
-                    Toast.makeText(mContext, "Xác thực thành công, đang xử lý...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mContext, "Xác thực vân tay thành công!", Toast.LENGTH_SHORT).show();
                     submitOrderToBackend(orderWithDetails);
                 }
 
                 @Override
                 public void onFailure() {
-                    // Vân tay sai hoặc bấm hủy -> Không làm gì cả (hoặc báo lỗi)
                     Toast.makeText(mContext, "Xác thực thất bại, vui lòng thử lại", Toast.LENGTH_SHORT).show();
                 }
             });
         } else {
-            // Nếu KHÔNG BẬT vân tay -> Gọi API luôn như cũ
-            submitOrderToBackend(orderWithDetails);
+            // CASE 2: KHÔNG BẬT VÂN TAY -> Chuyển sang quy trình OTP
+            initiateOtpProcess();
+        }
+    }
+
+    private void initiateOtpProcess() {
+        // Lấy số điện thoại người dùng từ SharedPref (đã lưu khi Login)
+        UserDTO user = EncryptedSharedPrefManager.loadUser(mContext);
+        String phoneNumber = (user != null) ? user.getPhone() : "";
+
+        // Fallback: Nếu không lấy được sđt từ user, thử lấy từ Address mặc định hoặc hardcode test
+        if (phoneNumber.isEmpty()) {
+            // Logic lấy sđt khác nếu cần, ví dụ từ AddressDto
+            Toast.makeText(mContext, "Không tìm thấy số điện thoại xác thực!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        sendOtpToFirebase(phoneNumber);
+    }
+
+    private void sendOtpToFirebase(String phoneNumber) {
+        showLoadingDialog();
+
+        // Chuẩn hóa sđt (+84)
+        String finalPhone = phoneNumber.startsWith("0") ? "+84" + phoneNumber.substring(1) : phoneNumber;
+
+        PhoneAuthOptions options = PhoneAuthOptions.newBuilder(mAuth)
+                .setPhoneNumber(finalPhone)
+                .setTimeout(60L, TimeUnit.SECONDS)
+                .setActivity(this)
+                .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                    @Override
+                    public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
+                        // Tự động verify (ít dùng khi cần user nhập tay)
+                        hideLoadingDialog();
+                    }
+
+                    @Override
+                    public void onVerificationFailed(@NonNull FirebaseException e) {
+                        hideLoadingDialog();
+                        Toast.makeText(mContext, "Gửi OTP thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onCodeSent(@NonNull String verificationId,
+                                           @NonNull PhoneAuthProvider.ForceResendingToken token) {
+                        hideLoadingDialog();
+
+                        // Gửi thành công -> Mở màn hình nhập OTP
+                        Intent intent = new Intent(mContext, PaymentOtpActivity.class);
+                        intent.putExtra("verificationId", verificationId);
+                        intent.putExtra("phoneNumber", phoneNumber);
+                        intent.putExtra("resendToken", token);
+
+                        // Sử dụng launcher để đợi kết quả trả về
+                        otpActivityLauncher.launch(intent);
+                    }
+                })
+                .build();
+        PhoneAuthProvider.verifyPhoneNumber(options);
+    }
+
+    // Helper hiển thị loading khi gửi OTP
+    private void showLoadingDialog() {
+        if (loadingDialog == null) {
+            loadingDialog = new Dialog(this);
+            loadingDialog.setContentView(new android.widget.ProgressBar(this));
+            if(loadingDialog.getWindow() != null)
+                loadingDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            loadingDialog.setCancelable(false);
+        }
+        loadingDialog.show();
+    }
+    private void hideLoadingDialog() {
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            loadingDialog.dismiss();
         }
     }
 
