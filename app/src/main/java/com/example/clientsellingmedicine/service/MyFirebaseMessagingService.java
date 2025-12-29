@@ -19,7 +19,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MyFirebaseMessagingService extends FirebaseMessagingService{
+public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FirebaseMsgService";
 
     @Override
@@ -29,9 +29,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService{
 
         // Check if the message contains a notification payload
         if (remoteMessage.getNotification() != null) {
-
             String title = remoteMessage.getNotification().getTitle();
             String body = remoteMessage.getNotification().getBody();
+            // Kiểm tra null an toàn hơn cho ImageUrl
             String imageUrl = remoteMessage.getNotification().getImageUrl() != null ? remoteMessage.getNotification().getImageUrl().toString() : null;
 
             NotificationHelper notificationHelper = new NotificationHelper(this);
@@ -40,47 +40,55 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService{
 
         // Check if the message contains a data payload
         if (remoteMessage.getData().size() > 0) {
-            // Extract data payload and process it
             Map<String, String> data = remoteMessage.getData();
             Log.d(TAG, "Data Payload: " + data.toString());
-            // Here you can handle the data payload
-            // e.g., update the database, perform background tasks, etc.
         }
     }
 
     @Override
     public void onNewToken(String token) {
-        saveFirebaseDeviceToken(token);
+        // Hàm này được gọi khi Firebase cấp token mới cho thiết bị
+        handleNewToken(token);
     }
 
-    // save to Encrypted Shared Preferences
-    private void saveFirebaseDeviceToken(String token) {
-        Token saveToken = new Token(token);
-        EncryptedSharedPrefManager.saveFirebaseToken(this, saveToken);
+    // Xử lý lưu token
+    private void handleNewToken(String token) {
+        // 1. Lưu vào Encrypted Shared Preferences
+        if (token != null && !token.isEmpty()) {
+            Token saveToken = new Token(token);
+            EncryptedSharedPrefManager.saveFirebaseToken(this, saveToken);
 
-        //save to DB
-        saveFirebaseDeviceToken(saveToken); //sometime it failed because user not login
+            // 2. Gửi lên Server (nếu Backend yêu cầu gửi dạng Object Token)
+            sendTokenToBackend(saveToken);
+        } else {
+            Log.w("FCM", "Token is null or empty, not saving");
+        }
     }
 
-    private void saveFirebaseDeviceToken(Token deviceToken){
-        NotificationAPI notificationAPI = ServiceBuilder.buildService(NotificationAPI.class);
-        Call<Void> request = notificationAPI.saveDevice(deviceToken);
-        request.enqueue(new Callback<Void>() {
-
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    Log.d("FCM", "Save firebase device token successfully ! ");
+    // Gửi token lên Backend
+    private void sendTokenToBackend(Token deviceToken) {
+        // Lưu ý: Hàm này có thể fail nếu User chưa đăng nhập (ServiceBuilder ko có Auth header)
+        // Điều này bình thường, ta sẽ gửi lại token này ở màn hình Login/Main sau.
+        try {
+            NotificationAPI notificationAPI = ServiceBuilder.buildService(NotificationAPI.class);
+            Call<Void> request = notificationAPI.saveDevice(deviceToken);
+            request.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Log.d("FCM", "Save firebase device token successfully!");
+                    } else {
+                        Log.d("FCM", "Save firebase device token failed! Code: " + response.code());
+                    }
                 }
-                else {
-                    Log.d("FCM", "Save firebase device token failed !");
-                }
-            }
 
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Log.d("FCM", "Save firebase device token failed !");
-            }
-        });
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Log.d("FCM", "Save firebase device token failed: " + t.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            Log.e("FCM", "Error sending token: " + e.getMessage());
+        }
     }
 }

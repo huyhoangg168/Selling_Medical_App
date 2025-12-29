@@ -1,6 +1,7 @@
 package com.example.clientsellingmedicine.api;
 
 import com.example.clientsellingmedicine.DTO.GoogleToken;
+import com.example.clientsellingmedicine.DTO.RefreshTokenRequest;
 import com.example.clientsellingmedicine.DTO.UserDTO;
 import com.example.clientsellingmedicine.DTO.UserLogin;
 import com.example.clientsellingmedicine.DTO.Token;
@@ -21,7 +22,7 @@ public interface LoginAPI {
     Call<Boolean> checkToken(@Body Token token);
 
     @POST("/api/auth/refresh-access-token")
-    Call<Token> refreshToken();
+    Call<Token> refreshToken(@Body RefreshTokenRequest request);
 
     @POST("/api/auth/login-with-google")
     Call<Token> loginWithGoogle(@Body GoogleToken token);

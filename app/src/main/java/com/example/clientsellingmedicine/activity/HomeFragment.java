@@ -439,29 +439,35 @@ public class HomeFragment extends Fragment implements IOnProductItemClickListene
 
     //Lưu token của device để firebase gửi thông báo
     private void saveFirebaseDeviceToken(){
+        // Lấy token từ EncryptedSharedPreferences (tự động giải mã)
         Token deviceToken = EncryptedSharedPrefManager.loadFirebaseToken(mContext);
 
-        NotificationAPI notificationAPI = ServiceBuilder.buildService(NotificationAPI.class);
-        Call<Void> request = notificationAPI.saveDevice(deviceToken);
+        // Kiểm tra token có tồn tại trước khi gửi lên server
+        if (deviceToken != null && deviceToken.getToken() != null && !deviceToken.getToken().isEmpty()) {
+            NotificationAPI notificationAPI = ServiceBuilder.buildService(NotificationAPI.class);
+            Call<Void> request = notificationAPI.saveDevice(deviceToken);
 
-        request.enqueue(new Callback<Void>() {
+            request.enqueue(new Callback<Void>() {
 
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    Log.d("FCM", "Save firebase device token successfully ! ");
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Log.d("FCM", "Save firebase device token successfully ! ");
+                    }
+                    else {
+                        Log.d("FCM", "Save firebase device token failed ! ");
+                    }
                 }
-                else {
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
                     Log.d("FCM", "Save firebase device token failed ! ");
                 }
-            }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Log.d("FCM", "Save firebase device token failed ! ");
-            }
-        });
-    }
+            });
+        } else {
+            Log.d("FCM", "Firebase device token not found or empty");
+        }
+    }   }
 
     private void getFeeds(){
         new FetchFeedTask().execute((Void) null);

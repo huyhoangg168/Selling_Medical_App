@@ -349,6 +349,7 @@
 
                 <!--Toa thuốc của tôi-->
                 <LinearLayout
+                    android:id="@+id/ll_changeNumPhone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
@@ -356,18 +357,18 @@
                     android:padding="12dp">
 
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
                         android:layout_gravity="center"
                         android:layout_marginStart="22dp"
-                        android:src="@drawable/ic_list_clipboard" />
+                        android:src="@drawable/link" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginStart="16dp"
                         android:gravity="center"
-                        android:text="Toa thuốc của tôi"
+                        android:text="Thay đổi số điện thoại liên kết"
                         android:textSize="16sp" />
 
                     <Space
@@ -445,7 +446,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="@color/gray" />
-                <!--Trung tâm trợ giúp-->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -458,14 +458,14 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:layout_marginStart="22dp"
-                        android:src="@drawable/ic_help_question" />
+                        android:src="@drawable/fingerprint" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginStart="16dp"
                         android:gravity="center"
-                        android:text="Trung tâm trợ giúp"
+                        android:text="Sử dụng vân tay"
                         android:textSize="16sp" />
 
                     <Space
@@ -473,13 +473,14 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1" />
 
-                    <ImageView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/arrow_right_gray" />
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/sw_biometric"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
 
                 </LinearLayout>
+
 
                 <TextView
                     android:layout_width="match_parent"

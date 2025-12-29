@@ -252,7 +252,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
-                    android:text="Mã xác thực sẽ hết hiệu lực sau:"
+                    android:text="Gửi lại mã xác minh sau:"
                     android:textSize="16sp" />
                 <TextView
                     android:id="@+id/tvCountDown"
@@ -261,7 +261,7 @@
                     android:layout_weight="1"
                     android:text="01:56"
                     android:layout_marginRight="15dp"
-                    android:gravity="end"
+                    android:gravity="center"
                     android:textStyle="bold"
                     android:textSize="16sp"
                     android:textColor="@color/header_color"
@@ -272,6 +272,28 @@
                     android:layout_height="wrap_content" />
 
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:paddingTop="10dp"
+                android:paddingStart="18dp">
+
+                <TextView
+                    android:id="@+id/tvResendOtp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gửi lại mã xác thực"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#007BFF"
+                    android:visibility="gone"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="8dp"/>
+            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

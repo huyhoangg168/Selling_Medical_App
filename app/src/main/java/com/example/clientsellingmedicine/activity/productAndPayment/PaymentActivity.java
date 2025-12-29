@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricPrompt;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -43,6 +44,7 @@ import com.example.clientsellingmedicine.api.AddressAPI;
 import com.example.clientsellingmedicine.api.CouponAPI;
 import com.example.clientsellingmedicine.api.OrderAPI;
 import com.example.clientsellingmedicine.api.ServiceBuilder;
+import com.example.clientsellingmedicine.utils.BiometricHelper;
 import com.example.clientsellingmedicine.utils.Constants;
 import com.example.clientsellingmedicine.utils.Convert;
 import com.example.clientsellingmedicine.utils.EncryptedSharedPrefManager;
@@ -166,33 +168,69 @@ public class PaymentActivity extends AppCompatActivity implements IOnVoucherItem
 
     //Xử lý thanh toán
     private void handlePayment() {
+        // 1. Kiểm tra địa chỉ (Giữ nguyên)
         if (tv_address.getText().toString().isEmpty()) {
             showAlertDialog("Chưa có địa chỉ", "Vui lòng thêm địa chỉ trước khi thanh toán !");
             return;
         }
-        OrderWithDetails orderWithDetails = new OrderWithDetails(); //tạo đối tượng order
 
+        // 2. Tạo đối tượng Order (Giữ nguyên logic cũ)
+        OrderWithDetails orderWithDetails = new OrderWithDetails();
         Order order = new Order();
         order.setPaymentMethod(tv_paymentMethod.getText().toString());
         order.setNote(edt_noteOrder.getText().toString());
         order.setUserAddress(tv_address.getText().toString());
-        order.setPoint(Integer.parseInt(tv_awardPoint.getText().toString()));
+        // Parse cẩn thận để tránh lỗi NumberFormatException
+        try {
+            String pointStr = tv_awardPoint.getText().toString().replace("+", "").trim();
+            order.setPoint(Integer.parseInt(pointStr));
+        } catch (Exception e) {
+            order.setPoint(0);
+        }
+
         order.setTotalCouponDiscount(Convert.convertCurrencyFormat(tv_voucherDiscount.getText().toString()));
         order.setTotalProductDiscount(Convert.convertCurrencyFormat(tv_productDiscount.getText().toString()));
         order.setTotal(Convert.convertCurrencyFormat(tv_finalTotalPrice.getText().toString()));
         order.setRedeemedCouponId(redeemedCoupon != null ? redeemedCoupon.getId() : 0);
 
-
         orderWithDetails.setOrder(order);
         orderWithDetails.setListCartItem(products);
 
-        if(order.getPaymentMethod().equalsIgnoreCase("MOMO"))
-            newOrderWithMoMo(orderWithDetails);
-        else if (order.getPaymentMethod().equalsIgnoreCase("COD"))
-            newOrderWithCOD(orderWithDetails);
-        else if (order.getPaymentMethod().equalsIgnoreCase("ZALOPAY"))
-            newOrderWithZalopay(orderWithDetails);
+        // 3. LOGIC MỚI: KIỂM TRA VÂN TAY
+        boolean isBiometricEnabled = SharedPref.getBoolean(mContext, Constants.BIOMETRIC_PREFS_NAME, Constants.KEY_BIOMETRIC_ENABLED, false);
 
+        if (isBiometricEnabled) {
+            // Nếu ĐANG BẬT vân tay -> Hiện bảng xác thực
+            BiometricHelper.authenticate(this, new BiometricHelper.BiometricCallback() {
+                @Override
+                public void onSuccess(BiometricPrompt.AuthenticationResult result) {
+                    // Vân tay đúng -> Mới gọi API thanh toán
+                    Toast.makeText(mContext, "Xác thực thành công, đang xử lý...", Toast.LENGTH_SHORT).show();
+                    submitOrderToBackend(orderWithDetails);
+                }
+
+                @Override
+                public void onFailure() {
+                    // Vân tay sai hoặc bấm hủy -> Không làm gì cả (hoặc báo lỗi)
+                    Toast.makeText(mContext, "Xác thực thất bại, vui lòng thử lại", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            // Nếu KHÔNG BẬT vân tay -> Gọi API luôn như cũ
+            submitOrderToBackend(orderWithDetails);
+        }
+    }
+
+    // Hàm này chỉ chuyên làm nhiệm vụ gọi API (đã tách ra từ handlePayment cũ)
+    private void submitOrderToBackend(OrderWithDetails orderWithDetails) {
+        String method = orderWithDetails.getOrder().getPaymentMethod();
+
+        if (method.equalsIgnoreCase("MOMO"))
+            newOrderWithMoMo(orderWithDetails);
+        else if (method.equalsIgnoreCase("COD"))
+            newOrderWithCOD(orderWithDetails);
+        else if (method.equalsIgnoreCase("ZALOPAY"))
+            newOrderWithZalopay(orderWithDetails);
     }
 
     //Lấy dữ liệu mặt hàng trong giỏ

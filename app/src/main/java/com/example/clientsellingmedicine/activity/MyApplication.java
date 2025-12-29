@@ -76,8 +76,13 @@ public class MyApplication extends Application {
 
     // save to Encrypted Shared Preferences
     private void saveFirebaseDeviceToken(String token) {
-        Token saveToken = new Token(token);
-        EncryptedSharedPrefManager.saveFirebaseToken(this, saveToken);
+        if (token != null && !token.isEmpty()) {
+            Token saveToken = new Token(token);
+            EncryptedSharedPrefManager.saveFirebaseToken(this, saveToken);
+            Log.d("FCM", "Firebase token saved to encrypted storage");
+        } else {
+            Log.w("FCM", "Token is null or empty, not saving");
+        }
     }
 
 }

@@ -106,5 +106,7 @@ dependencies {
     implementation ("com.google.android.gms:play-services-safetynet:18.0.1")
     //Mã hóa
     implementation ("androidx.security:security-crypto:1.1.0-alpha06")
+    //Vân tay
+    implementation("androidx.biometric:biometric:1.1.0")
 
 }

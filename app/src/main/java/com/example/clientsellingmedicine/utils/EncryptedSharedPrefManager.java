@@ -68,6 +68,18 @@ public class EncryptedSharedPrefManager {
         }
     }
 
+    // [THÊM MỚI] Xóa riêng Token
+    public static void removeToken(Context context) {
+        try {
+            getEncryptedPrefs(context)
+                    .edit()
+                    .remove(KEY_TOKEN)
+                    .apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     /* ================= USER ================= */
 
@@ -95,6 +107,19 @@ public class EncryptedSharedPrefManager {
         }
     }
 
+    // [THÊM MỚI] Xóa riêng User
+    public static void removeUser(Context context) {
+        try {
+            getEncryptedPrefs(context)
+                    .edit()
+                    .remove(KEY_USER)
+                    .apply();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /* ================= CLEAR ALL ================= */
     public static void clearAll(Context context) {
         try {
             SharedPreferences prefs = getEncryptedPrefs(context);

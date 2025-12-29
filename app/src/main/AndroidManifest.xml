@@ -123,6 +123,14 @@
             android:exported="false">
         </activity>
         <activity
+            android:name=".activity.authAndAccount.ChangePhoneActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".activity.authAndAccount.UpdatePhoneOtpActivity"
+            android:exported="false">
+        </activity>
+        <activity
             android:name=".activity.productAndPayment.MomoPaymentResultActivity"
             android:exported="true"
             android:launchMode="singleTask">
